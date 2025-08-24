@@ -1,139 +1,124 @@
-<!DOCTYPE html> // output
-<html lang="en">
+<!DOCTYPE html>//test
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Micro:bit Control (MQTT)</title>
+    <title>แผงควบคุม Micro:bit</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #121212; color: #e0e0e0; }
-        .btn { @apply px-6 py-3 rounded-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 text-white; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #334155;
+        }
     </style>
 </head>
-<body class="bg-gray-900 flex flex-col items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-lg">
+        <h1 class="text-3xl font-bold text-center mb-2 text-indigo-600">
+            แผงควบคุม Micro:bit
+        </h1>
+        <p class="text-center text-gray-500 mb-6">
+            ควบคุมขา P0, P1, P2, P12, P13, P14, P15, P16
+        </p>
 
-    <!-- Control Panel Section -->
-    <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-2xl mx-auto text-center mb-8">
-        <h1 class="text-4xl font-bold mb-6 text-emerald-400">แผงควบคุม Micro:bit</h1>
-        <p class="text-lg mb-8 text-gray-400">ควบคุมสถานะของขา P0, P1, P8, P12, P2, P13, P14, P15, P16</p>
-        <div id="pin-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-8"></div>
-    </div>
-    
-    <!-- Connection Status Section -->
-    <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-4xl mx-auto text-center">
-        <h2 class="text-3xl font-bold mb-6 text-sky-400">สถานะการเชื่อมต่อ</h2>
-        <div id="status-message" class="mt-4 text-center">
-            <p id="connection-status" class="text-yellow-400">กำลังเชื่อมต่อกับ MQTT Broker...</p>
+        <div id="status-message" class="text-center p-3 mb-4 rounded-lg font-medium text-sm">
+            กำลังเชื่อมต่อกับ MQTT...
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <!-- P0 -->
+            <button id="p0-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P0 (On)
+            </button>
+            <button id="p0-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P0 (Off)
+            </button>
+            <!-- P1 -->
+            <button id="p1-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P1 (On)
+            </button>
+            <button id="p1-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P1 (Off)
+            </button>
+            <!-- P2 -->
+            <button id="p2-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P2 (On)
+            </button>
+            <button id="p2-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P2 (Off)
+            </button>
+        </div>
+
+        <!-- Sensor Data Display -->
+        <div class="bg-gray-50 rounded-lg p-4 shadow-inner">
+            <h3 class="text-xl font-semibold mb-2 text-gray-700">ข้อมูลเซนเซอร์</h3>
+            <div id="sensor-data" class="text-gray-600 font-mono text-sm">
+                ไม่มีข้อมูลเซนเซอร์
+            </div>
         </div>
     </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+
     <script>
-        // --- MQTT Setup ---
-        // เปลี่ยนไปใช้ Public MQTT Broker ที่เชื่อถือได้มากขึ้น
-        const MQTT_BROKER = "test.mosquitto.org";
-        // ใช้ WebSocket Port ที่ปลอดภัย (WSS)
-        const MQTT_PORT = 8081;
-        
-        // ใช้ UNIQUE_ID ตัวเดียวกันกับในโค้ด Micro:bit
+        const MQTT_BROKER = "broker.hivemq.com";
         const UNIQUE_ID = "11222222";
-        const MQTT_COMMAND_TOPIC = "microbit/" + UNIQUE_ID + "/command";
-        const MQTT_SENSORS_TOPIC = "microbit/" + UNIQUE_ID + "/sensors";
+        const TOPIC = `microbit/${UNIQUE_ID}/command`;
+        const SENSORS_TOPIC = `microbit/${UNIQUE_ID}/sensors`;
+        
+        const statusMessage = document.getElementById('status-message');
 
-        // กำหนดการเชื่อมต่อโดยใช้ WebSocket
-        const client = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, "web-client-" + parseInt(Math.random() * 100, 10));
-
-        client.onConnectionLost = onConnectionLost;
-        client.onMessageArrived = onMessageArrived; // This is now an empty function
-        // ส่ง options เพื่อใช้ WebSocket
-        client.connect({
-            onSuccess: onConnect,
-            onFailure: onFailure,
-            useSSL: true, // ตั้งค่าเป็น true เพื่อใช้ SSL/TLS
-        });
-
-        function onConnect() {
-            console.log("Connected to MQTT Broker on " + MQTT_BROKER + ":" + MQTT_PORT);
-            document.getElementById('connection-status').textContent = "เชื่อมต่อเรียบร้อยแล้ว!";
-            document.getElementById('connection-status').className = "text-green-500";
-            // No longer subscribing to the sensor topic
-            // client.subscribe(MQTT_SENSORS_TOPIC);
-            // console.log("Subscribed to topic: " + MQTT_SENSORS_TOPIC);
-        }
-
-        function onFailure(responseObject) {
-            console.error("Failed to connect to MQTT Broker: " + responseObject.errorMessage);
-            document.getElementById('connection-status').textContent = "การเชื่อมต่อล้มเหลว!";
-            document.getElementById('connection-status').className = "text-red-500";
-        }
-
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                console.log("onConnectionLost:" + responseObject.errorMessage);
-                document.getElementById('connection-status').textContent = "ขาดการเชื่อมต่อ!";
-                document.getElementById('connection-status').className = "text-red-500";
+        function updateStatus(message, type) {
+            statusMessage.textContent = message;
+            if (type === 'success') {
+                statusMessage.className = 'text-center p-3 mb-4 rounded-lg font-medium text-sm bg-green-200 text-green-800';
+            } else if (type === 'error') {
+                statusMessage.className = 'text-center p-3 mb-4 rounded-lg font-medium text-sm bg-red-200 text-red-800';
+            } else {
+                statusMessage.className = 'text-center p-3 mb-4 rounded-lg font-medium text-sm bg-blue-200 text-blue-800';
             }
         }
 
-        function onMessageArrived(message) {
-            // Function is now empty since we are not displaying sensor data
-            // You can add a console log here for debugging if needed
-            console.log("Received a message, but sensor display is disabled.");
-        }
-        
-        const outputPins = [0, 1, 8, 12, 2, 13, 14, 15, 16];
-        const outputPinsState = {};
-        const pinContainer = document.getElementById('pin-container');
+        const client = mqtt.connect(`wss://${MQTT_BROKER}:8884`);
 
-        // Removed sensor input section
-        // const inputPins = [1, 2, 5, 8, 11, 12, 13, 14, 15, 16];
-        // const sensorContainer = document.getElementById('sensor-container');
-
-        function updateOutputPinUI(pin, state) {
-            const button = document.getElementById(`pin-${pin}-btn`);
-            if (button) {
-                if (state === "On") {
-                    button.classList.remove('bg-red-500', 'hover:bg-red-600');
-                    button.classList.add('bg-green-500', 'hover:bg-green-600');
-                    button.textContent = `P${pin} (On)`;
-                } else {
-                    button.classList.remove('bg-green-500', 'hover:bg-green-600');
-                    button.classList.add('bg-red-500', 'hover:bg-red-600');
-                    button.textContent = `P${pin} (Off)`;
+        client.on('connect', function () {
+            console.log('Connected to MQTT Broker!');
+            updateStatus('เชื่อมต่อสำเร็จ!', 'success');
+            client.subscribe(SENSORS_TOPIC, function (err) {
+                if (!err) {
+                    console.log(`Subscribed to ${SENSORS_TOPIC}`);
                 }
+            });
+        });
+
+        client.on('error', function (error) {
+            console.error('MQTT connection error:', error);
+            updateStatus('เกิดข้อผิดพลาดในการเชื่อมต่อ!', 'error');
+        });
+
+        client.on('message', function (topic, message) {
+            // message is a Buffer
+            const sensorData = message.toString();
+            console.log(`Received sensor data from MQTT: ${sensorData}`);
+            document.getElementById('sensor-data').textContent = sensorData;
+        });
+
+        function publishCommand(command) {
+            if (client.connected) {
+                client.publish(TOPIC, command);
+                console.log(`Published command to MQTT: ${command}`);
+            } else {
+                console.error('Client is not connected to MQTT broker.');
+                updateStatus('ไม่สามารถส่งคำสั่งได้: ไม่ได้เชื่อมต่อ!', 'error');
             }
         }
 
-        outputPins.forEach(pin => {
-            outputPinsState[pin] = "Off";
-            const button = document.createElement('button');
-            button.id = `pin-${pin}-btn`;
-            button.className = 'btn bg-red-500 hover:bg-red-600';
-            button.textContent = `P${pin} (Off)`;
-            button.onclick = () => {
-                const newState = outputPinsState[pin] === "On" ? "Off" : "On";
-                const command = `P${pin}_${newState}`;
-                const message = new Paho.MQTT.Message(command);
-                message.destinationName = MQTT_COMMAND_TOPIC;
-                client.send(message);
-                outputPinsState[pin] = newState;
-                updateOutputPinUI(pin, newState);
-                console.log("Published command to topic: " + MQTT_COMMAND_TOPIC + " | Payload: " + command);
-            };
-            pinContainer.appendChild(button);
-        });
-        
-        // Removed sensor UI creation loop
-        // inputPins.forEach(pin => {
-        //    const sensorCard = document.createElement('div');
-        //    sensorCard.className = 'bg-gray-700 p-4 rounded-lg shadow-inner';
-        //    sensorCard.innerHTML = `
-        //        <h3 class="text-xl font-bold text-sky-300">Pin P${pin}</h3>
-        //        <p class="text-lg mt-2 text-gray-300">Current Value: <span id="sensor-p${pin}-value" class="font-mono text-xl text-yellow-300">--</span></p>
-        //    `;
-        //    sensorContainer.appendChild(sensorCard);
-        // });
+        document.getElementById('p0-on').addEventListener('click', () => publishCommand('P0_On'));
+        document.getElementById('p0-off').addEventListener('click', () => publishCommand('P0_Off'));
+        document.getElementById('p1-on').addEventListener('click', () => publishCommand('P1_On'));
+        document.getElementById('p1-off').addEventListener('click', () => publishCommand('P1_Off'));
+        document.getElementById('p2-on').addEventListener('click', () => publishCommand('P2_On'));
+        document.getElementById('p2-off').addEventListener('click', () => publishCommand('P2_Off'));
     </script>
 </body>
 </html>
