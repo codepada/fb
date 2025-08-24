@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+    //81
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -105,15 +106,12 @@
             }
         }
         
-        // เราใช้ wss:// แทน ws:// เพื่อการเชื่อมต่อที่ปลอดภัย
-        // และใช้พอร์ต 8884 ซึ่งเป็นพอร์ตสำหรับ WebSocket ที่เข้ารหัส
-        // การใช้พอร์ต 8884 ช่วยให้เบราว์เซอร์สามารถเชื่อมต่อกับ MQTT broker ได้
-        const client = mqtt.connect(`wss://${MQTT_BROKER}:8884`);
+        // แก้ไข: ใช้พอร์ต 8081 ตามที่คุณแนะนำ
+        const client = mqtt.connect(`wss://${MQTT_BROKER}:8081`);
 
         client.on('connect', function () {
             console.log('Connected to MQTT Broker!');
             updateStatus('เชื่อมต่อสำเร็จ!', 'success');
-            // สมัครรับข้อมูลจาก topic สำหรับเซนเซอร์
             client.subscribe(SENSORS_TOPIC, function (err) {
                 if (!err) {
                     console.log(`Subscribed to ${SENSORS_TOPIC}`);
@@ -121,13 +119,11 @@
             });
         });
 
-        // จัดการข้อผิดพลาดในการเชื่อมต่อ
         client.on('error', function (error) {
             console.error('MQTT connection error:', error);
             updateStatus('เกิดข้อผิดพลาดในการเชื่อมต่อ! โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและพอร์ต.', 'error');
         });
 
-        // จัดการเมื่อได้รับข้อความจาก MQTT broker
         client.on('message', function (topic, message) {
             const sensorData = message.toString();
             console.log(`Received sensor data from MQTT: ${sensorData}`);
@@ -136,7 +132,6 @@
 
         function publishCommand(command) {
             if (client.connected) {
-                // ส่งคำสั่งไปยัง MQTT broker
                 client.publish(TOPIC, command);
                 console.log(`Published command to MQTT: ${command}`);
             } else {
@@ -145,7 +140,6 @@
             }
         }
 
-        // เพิ่มตัวจัดการเหตุการณ์ (event listeners) สำหรับปุ่มแต่ละปุ่ม
         document.getElementById('p0-on').addEventListener('click', () => publishCommand('P0_On'));
         document.getElementById('p0-off').addEventListener('click', () => publishCommand('P0_Off'));
         document.getElementById('p1-on').addEventListener('click', () => publishCommand('P1_On'));
