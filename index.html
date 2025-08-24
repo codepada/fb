@@ -1,4 +1,4 @@
-<!DOCTYPE html> //2 const MQTT_PORT = 8083;
+<!DOCTYPE html> //3
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -34,18 +34,24 @@
     <script>
         // --- MQTT Setup ---
         const MQTT_BROKER = "broker.hivemq.com";
-        const MQTT_PORT = 8083;
+        // เปลี่ยนมาใช้ WebSocket Port ที่ปลอดภัย (WSS) เพื่อหลีกเลี่ยงปัญหาการบล็อก
+        const MQTT_PORT = 8084;
         
         // ใช้ UNIQUE_ID ตัวเดียวกันกับในโค้ด Micro:bit
         const UNIQUE_ID = "11222222";
         const MQTT_COMMAND_TOPIC = "microbit/" + UNIQUE_ID + "/command";
         const MQTT_SENSORS_TOPIC = "microbit/" + UNIQUE_ID + "/sensors";
 
+        // กำหนดการเชื่อมต่อโดยใช้ WebSocket
         const client = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, "web-client-" + parseInt(Math.random() * 100, 10));
 
         client.onConnectionLost = onConnectionLost;
         client.onMessageArrived = onMessageArrived;
-        client.connect({ onSuccess: onConnect });
+        // ส่ง options เพื่อใช้ WebSocket
+        client.connect({
+            onSuccess: onConnect,
+            useSSL: true, // ตั้งค่าเป็น true เพื่อใช้ SSL/TLS
+        });
 
         function onConnect() {
             console.log("Connected to MQTT Broker");
