@@ -1,4 +1,4 @@
-<!DOCTYPE html> //3
+<!DOCTYPE html> //81
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -33,9 +33,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <script>
         // --- MQTT Setup ---
-        const MQTT_BROKER = "broker.hivemq.com";
-        // เปลี่ยนมาใช้ WebSocket Port ที่ปลอดภัย (WSS) เพื่อหลีกเลี่ยงปัญหาการบล็อก
-        const MQTT_PORT = 8084;
+        // เปลี่ยนไปใช้ Public MQTT Broker ที่เชื่อถือได้มากขึ้น
+        const MQTT_BROKER = "test.mosquitto.org";
+        // ใช้ WebSocket Port ที่ปลอดภัย (WSS)
+        const MQTT_PORT = 8081;
         
         // ใช้ UNIQUE_ID ตัวเดียวกันกับในโค้ด Micro:bit
         const UNIQUE_ID = "11222222";
