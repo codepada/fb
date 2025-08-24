@@ -140,125 +140,137 @@
     </div>
 
     <script>
-        // MQTT Broker Settings - ต้องตรงกับ ESP32 และ Micro:bit
-        // หน้าเว็บต้องใช้พอร์ต WebSocket
-        const HOST = 'broker.hivemq.com';
-        const PORT = 8884; // Secure WebSocket Port for broker.hivemq.com
-        const PROTOCOL = 'wss'; // Encrypted WebSocket
-        
-        let client;
-        let uniqueId;
-        const statusElement = document.getElementById('status');
-
-        document.getElementById('connectBtn').addEventListener('click', () => {
-            uniqueId = document.getElementById('uniqueId').value;
-            if (!uniqueId) {
-                statusElement.textContent = "Error: Please enter a unique ID.";
-                statusElement.style.color = "red";
-                return;
+        // Use an event listener to ensure the script runs only after the DOM is fully loaded.
+        window.onload = function() {
+            // Check if Paho is loaded before proceeding
+            if (typeof Paho !== 'undefined' && Paho.MQTT && Paho.MQTT.Client) {
+                initializeMQTT();
+            } else {
+                console.error("Paho MQTT client is not loaded. Please check the script URL.");
+                document.getElementById('status').textContent = "Error: Paho script not loaded.";
+                document.getElementById('status').style.color = "red";
             }
-            connectMQTT();
-        });
+        };
 
-        // Function to establish MQTT connection
-        function connectMQTT() {
-            statusElement.textContent = "สถานะ: กำลังเชื่อมต่อ...";
-            statusElement.style.color = "black";
-            // Paho requires the /mqtt path for WSS connections
-            client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", "web-" + Math.random().toString(16).substr(2, 8));
+        // All MQTT logic is now inside a function to be called on window.onload
+        function initializeMQTT() {
+            const HOST = 'broker.hivemq.com';
+            const PORT = 8884; // Secure WebSocket Port for broker.hivemq.com
+            
+            let client;
+            let uniqueId;
+            const statusElement = document.getElementById('status');
 
-            client.onConnectionLost = onConnectionLost;
-            client.onMessageArrived = onMessageArrived;
+            document.getElementById('connectBtn').addEventListener('click', () => {
+                uniqueId = document.getElementById('uniqueId').value;
+                if (!uniqueId) {
+                    statusElement.textContent = "Error: Please enter a unique ID.";
+                    statusElement.style.color = "red";
+                    return;
+                }
+                connectMQTT();
+            });
 
-            try {
-                // useSSL: true is required for wss:// protocol
-                client.connect({
-                    onSuccess: onConnect,
-                    useSSL: true, // IMPORTANT: Set to true for secure connection
-                    timeout: 3, // 3 seconds timeout
-                    onFailure: onFail
-                });
-            } catch (e) {
-                statusElement.textContent = "Error: " + e.message;
-                statusElement.style.color = "red";
-            }
-        }
+            // Function to establish MQTT connection
+            function connectMQTT() {
+                statusElement.textContent = "สถานะ: กำลังเชื่อมต่อ...";
+                statusElement.style.color = "black";
+                // Paho requires the /mqtt path for WSS connections
+                client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", "web-" + Math.random().toString(16).substr(2, 8));
 
-        // Called when the connection is successful
-        function onConnect() {
-            console.log("Connected to MQTT Broker.");
-            statusElement.textContent = "สถานะ: เชื่อมต่อแล้ว";
-            statusElement.style.color = "green";
+                client.onConnectionLost = onConnectionLost;
+                client.onMessageArrived = onMessageArrived;
 
-            // Subscribe to the sensor data topic
-            const sensorTopic = `${uniqueId}/sensors`;
-            client.subscribe(sensorTopic);
-            console.log(`Subscribed to topic: ${sensorTopic}`);
-        }
-        
-        // Called when the connection fails
-        function onFail(responseObject) {
-            console.log("Connection failed: " + responseObject.errorMessage);
-            statusElement.textContent = `สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`;
-            statusElement.style.color = "red";
-        }
-
-        // Called when the connection is lost
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                console.log("Connection lost: " + responseObject.errorMessage);
-                statusElement.textContent = `สถานะ: การเชื่อมต่อหลุด (${responseObject.errorMessage})`;
-                statusElement.style.color = "red";
-            }
-        }
-
-        // Called when a message arrives
-        function onMessageArrived(message) {
-            console.log("Message arrived on topic " + message.destinationName + ": " + message.payloadString);
-            const payload = message.payloadString;
-            const sensorDataElement = document.getElementById('sensor-data');
-
-            // Handle sensor data messages
-            if (payload.startsWith("sensors:")) {
-                const dataString = payload.substring(8);
-                const dataPairs = dataString.split(',');
-                
-                let htmlContent = '';
-                dataPairs.forEach(pair => {
-                    const [pin, value] = pair.split(':');
-                    htmlContent += `
-                        <div class="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
-                            <span class="block text-sm font-medium text-gray-500">${pin}</span>
-                            <span class="block text-xl font-bold text-gray-800">${value}</span>
-                        </div>
-                    `;
-                });
-                if (htmlContent) {
-                    sensorDataElement.innerHTML = htmlContent;
+                try {
+                    // useSSL: true is required for wss:// protocol
+                    client.connect({
+                        onSuccess: onConnect,
+                        useSSL: true, // IMPORTANT: Set to true for secure connection
+                        timeout: 3, // 3 seconds timeout
+                        onFailure: onFail
+                    });
+                } catch (e) {
+                    statusElement.textContent = "Error: " + e.message;
+                    statusElement.style.color = "red";
                 }
             }
-        }
-        
-        // Function to publish commands to the Micro:bit
-        function publishCommand(pin, state) {
-            if (!client || !client.isConnected()) {
-                statusElement.textContent = "Error: Not connected to MQTT.";
+
+            // Called when the connection is successful
+            function onConnect() {
+                console.log("Connected to MQTT Broker.");
+                statusElement.textContent = "สถานะ: เชื่อมต่อแล้ว";
+                statusElement.style.color = "green";
+
+                // Subscribe to the sensor data topic
+                const sensorTopic = `${uniqueId}/sensors`;
+                client.subscribe(sensorTopic);
+                console.log(`Subscribed to topic: ${sensorTopic}`);
+            }
+            
+            // Called when the connection fails
+            function onFail(responseObject) {
+                console.log("Connection failed: " + responseObject.errorMessage);
+                statusElement.textContent = `สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`;
                 statusElement.style.color = "red";
-                return;
             }
 
-            const topic = `${uniqueId}/commands`;
-            const payload = `${pin}_${state}`;
+            // Called when the connection is lost
+            function onConnectionLost(responseObject) {
+                if (responseObject.errorCode !== 0) {
+                    console.log("Connection lost: " + responseObject.errorMessage);
+                    statusElement.textContent = `สถานะ: การเชื่อมต่อหลุด (${responseObject.errorMessage})`;
+                    statusElement.style.color = "red";
+                }
+            }
+
+            // Called when a message arrives
+            function onMessageArrived(message) {
+                console.log("Message arrived on topic " + message.destinationName + ": " + message.payloadString);
+                const payload = message.payloadString;
+                const sensorDataElement = document.getElementById('sensor-data');
+
+                // Handle sensor data messages
+                if (payload.startsWith("sensors:")) {
+                    const dataString = payload.substring(8);
+                    const dataPairs = dataString.split(',');
+                    
+                    let htmlContent = '';
+                    dataPairs.forEach(pair => {
+                        const [pin, value] = pair.split(':');
+                        htmlContent += `
+                            <div class="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
+                                <span class="block text-sm font-medium text-gray-500">${pin}</span>
+                                <span class="block text-xl font-bold text-gray-800">${value}</span>
+                            </div>
+                        `;
+                    });
+                    if (htmlContent) {
+                        sensorDataElement.innerHTML = htmlContent;
+                    }
+                }
+            }
             
-            const message = new Paho.MQTT.Message(payload);
-            message.destinationName = topic;
-            
-            try {
-                client.send(message);
-                console.log(`Published to ${topic}: ${payload}`);
-            } catch (e) {
-                statusElement.textContent = `Error publishing: ${e.message}`;
-                statusElement.style.color = "red";
+            // Function to publish commands to the Micro:bit
+            window.publishCommand = function(pin, state) {
+                if (!client || !client.isConnected()) {
+                    statusElement.textContent = "Error: Not connected to MQTT.";
+                    statusElement.style.color = "red";
+                    return;
+                }
+
+                const topic = `${uniqueId}/commands`;
+                const payload = `${pin}_${state}`;
+                
+                const message = new Paho.MQTT.Message(payload);
+                message.destinationName = topic;
+                
+                try {
+                    client.send(message);
+                    console.log(`Published to ${topic}: ${payload}`);
+                } catch (e) {
+                    statusElement.textContent = `Error publishing: ${e.message}`;
+                    statusElement.style.color = "red";
+                }
             }
         }
     </script>
