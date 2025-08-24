@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Micro:bit Output Control</title>
-    <!-- Inter Font -->
+    <title>Micro:bit Multi-Page Control</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap">
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -15,19 +13,234 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
+                    colors: {
+                        'new-pastel': {
+                            'bg': '#FDF9F8',
+                            'card': '#E8E2E6',
+                            'text': '#5C5470',
+                            'accent-1': '#B985A9',
+                            'accent-2': '#A9B3CE',
+                            'accent-3': '#C2D1C1',
+                        },
+                        'gamepad-bg': '#FF6B6B',
+                        'gamepad-blue': '#4ECDC4',
+                        'gamepad-dark': '#48576E',
+                        'gamepad-orange': '#FF805B',
+                        'gamepad-yellow': '#F3C969',
+                        'gamepad-green': '#A6E5D3',
+                        // New colors matching the image
+                        'ui-bg': '#E9E3E8',
+                        'gamepad-base': '#424F64',
+                        'dpad-green': '#65C8BF',
+                        'dpad-center': '#89999F',
+                        'action-red': '#E97262',
+                        'action-yellow': '#ECC278',
+                        'action-green': '#62C2BF',
+                        'action-blue': '#5C8DCA',
+                    },
                 },
             },
         };
     </script>
-    <!-- Paho MQTT JavaScript Client -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #E9E3E8;
+            color: #5C5470;
         }
+
         .bg-gradient-primary {
-            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-image: linear-gradient(135deg, #B985A9 0%, #A9B3CE 100%);
         }
+
+        /* --- Main Content and Sidebar Styles --- */
+        .container-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .main-content {
+            width: 100%;
+            max-width: 600px;
+            background-color: #E8E2E6;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2.5rem 1.5rem;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #B985A9;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+            transition: left 0.3s ease-in-out;
+            z-index: 50;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-link {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            color: #FDF9F8;
+            transition: background-color 0.2s;
+        }
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Hamburger menu button */
+        .hamburger-btn {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 60;
+            background-color: #B985A9;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .hamburger-btn svg {
+            fill: #FDF9F8;
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Page specific styles */
+        .hidden-page {
+            display: none;
+        }
+
+        /* --- Gamepad Styles (Updated to fix layout) --- */
+        .gamepad-container {
+            background-color: #E9E3E8;
+            padding: 2.5rem 2rem;
+            border-radius: 2rem;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .gamepad-inner {
+            background-color: #424F64;
+            border-radius: 1.5rem;
+            padding: 3rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Control Button Base Styles */
+        .control-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out, background-color 0.1s ease-in-out;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .control-button:active, .control-button.active {
+            transform: scale(0.95);
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 0 10px 2px var(--button-color);
+        }
+
+        /* D-Pad Styles - Updated for vertical/horizontal alignment */
+        .dpad-container {
+            display: grid;
+            grid-template-areas:
+                ". up ."
+                "left center right"
+                ". down .";
+            grid-template-columns: repeat(3, 45px);
+            grid-template-rows: repeat(3, 45px);
+            gap: 2px;
+            background-color: #424F64;
+            border-radius: 4px;
+        }
+        
+        .dpad-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 9999px;
+            background-color: #65C8BF;
+            transition: background-color 0.1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .dpad-button:active, .dpad-button.active {
+            transform: scale(0.95);
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 0 10px 2px #65C8BF;
+        }
+        .dpad-up { grid-area: up; }
+        .dpad-down { grid-area: down; }
+        .dpad-left { grid-area: left; }
+        .dpad-right { grid-area: right; }
+        .dpad-center {
+            grid-area: center;
+            background-color: #89999F;
+            border-radius: 4px;
+            width: 45px;
+            height: 45px;
+        }
+
+        /* Action Button Styles - Updated to be all circular and in a new layout */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .action-row {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .action-buttons button {
+            width: 50px;
+            height: 50px;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .btn-h { background-color: #E97262; --button-color: #E97262; }
+        .btn-j { background-color: #5C8DCA; --button-color: #5C8DCA; }
+        .btn-k { background-color: #ECC278; --button-color: #ECC278; }
+        .btn-l { background-color: #62C2BF; --button-color: #62C2BF; }
 
         /* Styles for the new toggle switch */
         .toggle-switch {
@@ -68,7 +281,7 @@
         }
 
         input:checked + .slider {
-            background-color: #22c55e; /* green-500 */
+            background-color: #A6E5D3;
         }
 
         input:checked + .slider:before {
@@ -76,110 +289,132 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 sm:p-6">
+<body class="bg-ui-bg min-h-screen">
+    
+    <div class="hamburger-btn" onclick="toggleSidebar()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+    </div>
 
-    <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-lg space-y-6">
-        <!-- Header Section -->
-        <header class="text-center">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
-                    ควบคุม Micro:bit
-                </span>
-            </h1>
-            <p id="status" class="mt-2 text-sm text-gray-500 font-medium">สถานะ: ไม่ได้เชื่อมต่อ</p>
-        </header>
+    <div id="sidebar" class="sidebar">
+        <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-connect')">Connect</a>
+        <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-gamepad')">Gamepad</a>
+        <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-pins')">Pin Control</a>
+    </div>
 
-        <!-- Connection Settings Section -->
-        <section class="space-y-4">
-            <div class="p-4 bg-gray-50 rounded-lg shadow-sm">
-                <label for="uniqueId" class="block text-sm font-medium text-gray-700">ID เฉพาะ (ต้องตรงกับ Micro:bit)</label>
-                <input type="text" id="uniqueId" value="11222222" placeholder="ใส่ ID เฉพาะที่นี่"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
-            </div>
-            <button id="connectBtn"
-                class="w-full bg-gradient-primary text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
-                เชื่อมต่อกับ Broker
-            </button>
-        </section>
+    <div class="container-wrapper">
+        <div class="main-content">
+            <div id="status" class="text-center font-medium my-4">สถานะ: ไม่ได้เชื่อมต่อ</div>
 
-        <!-- Pin Control Section -->
-        <section class="space-y-4">
-            <h2 class="text-xl font-semibold text-gray-700">ควบคุมพินดิจิตอล</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="pin-control-container">
-                <!-- Pin 0 Control -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
-                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 0</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-P0" onchange="handleToggleChange('P0', this.checked)">
-                        <span class="slider"></span>
-                    </label>
+            <section id="page-connect" class="space-y-4">
+                <h2 class="text-xl font-semibold text-center text-new-pastel-text">เชื่อมต่อกับ Micro:bit</h2>
+                <div class="p-4 bg-new-pastel-card rounded-lg shadow-sm">
+                    <label for="uniqueId" class="block text-sm font-medium text-new-pastel-text">ID เฉพาะ (ต้องตรงกับ Micro:bit)</label>
+                    <input type="text" id="uniqueId" value="11222222" placeholder="ใส่ ID เฉพาะที่นี่"
+                        class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-sm focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
                 </div>
-                <!-- Pin 1 Control -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
-                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 1</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-P1" onchange="handleToggleChange('P1', this.checked)">
-                        <span class="slider"></span>
-                    </label>
+                <button id="connectBtn"
+                    class="w-full bg-gradient-primary text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+                    เชื่อมต่อกับ Broker
+                </button>
+            </section>
+
+            <section id="page-gamepad" class="hidden-page">
+                <h2 class="text-xl font-semibold text-center text-new-pastel-text mb-4">Web Gamepad</h2>
+                <div class="gamepad-container">
+                    <div class="gamepad-inner">
+                        <div class="dpad-container">
+                            <button id="dpad-up" class="dpad-button dpad-up" ontouchstart="publishCommand('gamepad', 'UP_PRESSED')" ontouchend="publishCommand('gamepad', 'UP_RELEASED')" onmousedown="publishCommand('gamepad', 'UP_PRESSED')" onmouseup="publishCommand('gamepad', 'UP_RELEASED')">↑</button>
+                            <button id="dpad-left" class="dpad-button dpad-left" ontouchstart="publishCommand('gamepad', 'LEFT_PRESSED')" ontouchend="publishCommand('gamepad', 'LEFT_RELEASED')" onmousedown="publishCommand('gamepad', 'LEFT_PRESSED')" onmouseup="publishCommand('gamepad', 'LEFT_RELEASED')">←</button>
+                            <div class="dpad-center"></div>
+                            <button id="dpad-right" class="dpad-button dpad-right" ontouchstart="publishCommand('gamepad', 'RIGHT_PRESSED')" ontouchend="publishCommand('gamepad', 'RIGHT_RELEASED')" onmousedown="publishCommand('gamepad', 'RIGHT_PRESSED')" onmouseup="publishCommand('gamepad', 'RIGHT_RELEASED')">→</button>
+                            <button id="dpad-down" class="dpad-button dpad-down" ontouchstart="publishCommand('gamepad', 'DOWN_PRESSED')" ontouchend="publishCommand('gamepad', 'DOWN_RELEASED')" onmousedown="publishCommand('gamepad', 'DOWN_PRESSED')" onmouseup="publishCommand('gamepad', 'DOWN_RELEASED')">↓</button>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <div class="action-row">
+                                <button id="btn-h" class="control-button btn-h" ontouchstart="publishCommand('gamepad', 'H_PRESSED')" ontouchend="publishCommand('gamepad', 'H_RELEASED')" onmousedown="publishCommand('gamepad', 'H_PRESSED')" onmouseup="publishCommand('gamepad', 'H_RELEASED')">H</button>
+                                <button id="btn-j" class="control-button btn-j" ontouchstart="publishCommand('gamepad', 'J_PRESSED')" ontouchend="publishCommand('gamepad', 'J_RELEASED')" onmousedown="publishCommand('gamepad', 'J_PRESSED')" onmouseup="publishCommand('gamepad', 'J_RELEASED')">J</button>
+                            </div>
+                            <div class="action-row">
+                                <button id="btn-k" class="control-button btn-k" ontouchstart="publishCommand('gamepad', 'K_PRESSED')" ontouchend="publishCommand('gamepad', 'K_RELEASED')" onmousedown="publishCommand('gamepad', 'K_PRESSED')" onmouseup="publishCommand('gamepad', 'K_RELEASED')">K</button>
+                                <button id="btn-l" class="control-button btn-l" ontouchstart="publishCommand('gamepad', 'L_PRESSED')" ontouchend="publishCommand('gamepad', 'L_RELEASED')" onmousedown="publishCommand('gamepad', 'L_PRESSED')" onmouseup="publishCommand('gamepad', 'L_RELEASED')">L</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <!-- NEW: Pin 2 Control -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
-                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 2</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-P2" onchange="handleToggleChange('P2', this.checked)">
-                        <span class="slider"></span>
-                    </label>
+            </section>
+
+            <section id="page-pins" class="hidden-page space-y-4">
+                <h2 class="text-xl font-semibold text-new-pastel-text">ควบคุมพินดิจิตอล</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="pin-control-container">
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 0</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P0" onchange="handleToggleChange('P0', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 1</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P1" onchange="handleToggleChange('P1', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 2</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P2" onchange="handleToggleChange('P2', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 8</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P8" onchange="handleToggleChange('P8', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 12</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P12" onchange="handleToggleChange('P12', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 13</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P13" onchange="handleToggleChange('P13', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 14</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P14" onchange="handleToggleChange('P14', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 15</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P15" onchange="handleToggleChange('P15', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 16</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P16" onchange="handleToggleChange('P16', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
-                <!-- Pin 8 Control -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
-                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 8</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-P8" onchange="handleToggleChange('P8', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <!-- Pin 12 Control -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
-                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 12</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-P12" onchange="handleToggleChange('P12', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <!-- Pin 13 Control -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
-                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 13</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-P13" onchange="handleToggleChange('P13', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <!-- Pin 14 Control -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
-                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 14</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-P14" onchange="handleToggleChange('P14', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <!-- Pin 15 Control -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
-                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 15</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-P15" onchange="handleToggleChange('P15', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <!-- Pin 16 Control -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
-                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 16</span>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-P16" onchange="handleToggleChange('P16', this.checked)">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </div>
 
     <script>
@@ -188,106 +423,148 @@
         const PORT = 8884; // Secure WebSocket Port
         let client;
         let uniqueId;
-        const statusElement = document.getElementById('status');
-
+        
         // --- Event Listener for Page Load ---
         window.onload = function() {
-            // Check if Paho library is loaded.
             if (typeof Paho === 'undefined' || !Paho.MQTT || !Paho.MQTT.Client) {
-                statusElement.textContent = "Error: Paho script not loaded.";
-                statusElement.style.color = "red";
+                const statusElement = document.getElementById('status');
+                if (statusElement) {
+                    statusElement.textContent = "Error: Paho script not loaded.";
+                    statusElement.style.color = "red";
+                }
                 console.error("Paho MQTT client is not loaded. Check the script link or internet connection.");
                 return;
             }
             initializeMQTT();
+            showPage(null, 'page-connect');
         };
 
         // --- Main MQTT Initialization Function ---
         function initializeMQTT() {
-            document.getElementById('connectBtn').addEventListener('click', () => {
-                uniqueId = document.getElementById('uniqueId').value;
-                if (!uniqueId) {
-                    statusElement.textContent = "Error: Please enter a unique ID.";
-                    statusElement.style.color = "red";
-                    return;
-                }
-                connectMQTT();
-            });
+            const statusElement = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            if (connectBtn) {
+                connectBtn.addEventListener('click', () => {
+                    uniqueId = document.getElementById('uniqueId').value;
+                    if (!uniqueId) {
+                        if (statusElement) {
+                            statusElement.textContent = "Error: Please enter a unique ID.";
+                            statusElement.style.color = "red";
+                        }
+                        return;
+                    }
+                    connectMQTT();
+                });
+            } else {
+                console.error("Connect button not found.");
+            }
+        }
+        
+        window.toggleSidebar = function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('open');
+        }
 
-            function connectMQTT() {
+        window.showPage = function(event, pageId) {
+            if (event) {
+                event.preventDefault();
+            }
+            const pages = document.querySelectorAll('section[id^="page-"]');
+            pages.forEach(page => {
+                page.classList.add('hidden-page');
+            });
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.remove('hidden-page');
+            } else {
+                console.error(`Page with ID ${pageId} not found.`);
+            }
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.remove('open');
+            }
+        }
+
+        function connectMQTT() {
+            const statusElement = document.getElementById('status');
+            if (statusElement) {
                 statusElement.textContent = "สถานะ: กำลังเชื่อมต่อ...";
                 statusElement.style.color = "black";
-                
-                // Client ID must be unique
-                const clientId = "web-" + Math.random().toString(16).substr(2, 8);
-                client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", clientId);
+            }
+            const clientId = "web-" + Math.random().toString(16).substr(2, 8);
+            client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", clientId);
 
-                client.onConnectionLost = onConnectionLost;
-                client.onMessageArrived = onMessageArrived; // This function is still needed to confirm successful connection messages
+            client.onConnectionLost = onConnectionLost;
+            client.onMessageArrived = onMessageArrived;
 
-                try {
-                    client.connect({
-                        onSuccess: onConnect,
-                        useSSL: true, // IMPORTANT for secure connection
-                        timeout: 5,
-                        onFailure: onFail
-                    });
-                } catch (e) {
+            try {
+                client.connect({
+                    onSuccess: onConnect,
+                    useSSL: true,
+                    timeout: 5,
+                    onFailure: onFail
+                });
+            } catch (e) {
+                if (statusElement) {
                     statusElement.textContent = `Error: ${e.message}`;
                     statusElement.style.color = "red";
-                    console.error("MQTT connection failed:", e);
                 }
+                console.error("MQTT connection failed:", e);
             }
+        }
 
-            function onConnect() {
-                console.log("Connected to MQTT Broker.");
+        function onConnect() {
+            const statusElement = document.getElementById('status');
+            console.log("Connected to MQTT Broker.");
+            if (statusElement) {
                 statusElement.textContent = "สถานะ: เชื่อมต่อแล้ว";
                 statusElement.style.color = "green";
-
-                // No need to subscribe to a sensor topic anymore
             }
+        }
 
-            function onFail(responseObject) {
-                console.log("Connection failed: " + responseObject.errorMessage);
+        function onFail(responseObject) {
+            const statusElement = document.getElementById('status');
+            console.log("Connection failed: " + responseObject.errorMessage);
+            if (statusElement) {
                 statusElement.textContent = `สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`;
                 statusElement.style.color = "red";
             }
+        }
 
-            function onConnectionLost(responseObject) {
-                if (responseObject.errorCode !== 0) {
-                    console.log("Connection lost: " + responseObject.errorMessage);
+        function onConnectionLost(responseObject) {
+            const statusElement = document.getElementById('status');
+            if (responseObject.errorCode !== 0) {
+                console.log("Connection lost: " + responseObject.errorMessage);
+                if (statusElement) {
                     statusElement.textContent = `สถานะ: การเชื่อมต่อหลุด (${responseObject.errorMessage})`;
                     statusElement.style.color = "red";
                 }
             }
-            
-            // This function is now simplified as it no longer needs to process sensor data.
-            // It will only receive messages for debugging or future features if added.
-            function onMessageArrived(message) {
-                console.log("Message arrived on topic " + message.destinationName + ": " + message.payloadString);
-            }
+        }
+        
+        function onMessageArrived(message) {
+            console.log("Message arrived on topic " + message.destinationName + ": " + message.payloadString);
         }
 
-        // --- New Function to Handle Toggle Switch Changes ---
         window.handleToggleChange = function(pin, isChecked) {
+            const statusElement = document.getElementById('status');
             const state = isChecked ? 'On' : 'Off';
-            publishCommand(pin, state);
+            publishCommand('commands', `${pin}_${state}`);
         }
 
-        // --- Function to Publish Commands ---
-        function publishCommand(pin, state) {
+        window.publishCommand = function(topicSuffix, payload) {
+            const statusElement = document.getElementById('status');
             if (!client || !client.isConnected()) {
-                statusElement.textContent = "Error: Not connected to MQTT.";
-                statusElement.style.color = "red";
-                // Reset the toggle switch state
-                const toggle = document.getElementById(`toggle-${pin}`);
-                toggle.checked = !toggle.checked;
+                const message = `Error: Not connected to MQTT. Cannot send command "${payload}".`;
+                console.error(message);
+                if (statusElement) {
+                    statusElement.textContent = "Error: Not connected to MQTT.";
+                    statusElement.style.color = "red";
+                }
                 return;
             }
 
-            const topic = `${uniqueId}/commands`;
-            const payload = `${pin}_${state}`;
-            
+            const topic = `${uniqueId}/${topicSuffix}`;
             const message = new Paho.MQTT.Message(payload);
             message.destinationName = topic;
             
@@ -295,14 +572,64 @@
                 client.send(message);
                 console.log(`Published to ${topic}: ${payload}`);
             } catch (e) {
-                statusElement.textContent = `Error publishing: ${e.message}`;
-                statusElement.style.color = "red";
+                if (statusElement) {
+                    statusElement.textContent = `Error publishing: ${e.message}`;
+                    statusElement.style.color = "red";
+                }
                 console.error("Publishing failed:", e);
-                // Reset the toggle switch state on failure
-                const toggle = document.getElementById(`toggle-${pin}`);
-                toggle.checked = !toggle.checked;
             }
         }
+        
+        // --- Event Listener for Keyboard Input (โค้ดที่แก้ไขแล้ว) ---
+        const keyMap = {
+            'w': 'dpad-up', 'W': 'dpad-up', 'ArrowUp': 'dpad-up',
+            's': 'dpad-down', 'S': 'dpad-down', 'ArrowDown': 'dpad-down',
+            'a': 'dpad-left', 'A': 'dpad-left', 'ArrowLeft': 'dpad-left',
+            'd': 'dpad-right', 'D': 'dpad-right', 'ArrowRight': 'dpad-right',
+            'h': 'btn-h', 'H': 'btn-h',
+            'j': 'btn-j', 'J': 'btn-j',
+            'k': 'btn-k', 'K': 'btn-k',
+            'l': 'btn-l', 'L': 'btn-l'
+        };
+
+        const keyCommandMap = {
+            'w': 'UP', 'W': 'UP', 'ArrowUp': 'UP',
+            's': 'DOWN', 'S': 'DOWN', 'ArrowDown': 'DOWN',
+            'a': 'LEFT', 'A': 'LEFT', 'ArrowLeft': 'LEFT',
+            'd': 'RIGHT', 'D': 'RIGHT', 'ArrowRight': 'RIGHT',
+            'h': 'H', 'H': 'H',
+            'j': 'J', 'J': 'J',
+            'k': 'K', 'K': 'K',
+            'l': 'L', 'L': 'L'
+        };
+
+        document.addEventListener('keydown', (event) => {
+            if (event.repeat) return; // Ignore key repeat
+
+            const buttonId = keyMap[event.key];
+            const command = keyCommandMap[event.key];
+            
+            if (buttonId && command) {
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    button.classList.add('active');
+                }
+                publishCommand('gamepad', `${command}_PRESSED`);
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            const buttonId = keyMap[event.key];
+            const command = keyCommandMap[event.key];
+            
+            if (buttonId && command) {
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    button.classList.remove('active');
+                }
+                publishCommand('gamepad', `${command}_RELEASED`);
+            }
+        });
     </script>
 </body>
 </html>
