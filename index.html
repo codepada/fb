@@ -13,12 +13,14 @@
 </head>
 <body class="bg-gray-900 flex flex-col items-center justify-center min-h-screen p-4">
 
+    <!-- Control Panel Section -->
     <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-2xl mx-auto text-center mb-8">
         <h1 class="text-4xl font-bold mb-6 text-emerald-400">แผงควบคุม Micro:bit</h1>
         <p class="text-lg mb-8 text-gray-400">ควบคุมสถานะของขา P0, P1, P8, P12, P2, P13, P14, P15, P16</p>
         <div id="pin-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-8"></div>
     </div>
     
+    <!-- Sensor Input Section -->
     <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-4xl mx-auto text-center">
         <h2 class="text-3xl font-bold mb-6 text-sky-400">ข้อมูลเซนเซอร์แบบเรียลไทม์</h2>
         <p class="text-lg mb-8 text-gray-400">อ่านค่า Input จากขา Micro:bit ที่กำหนด</p>
@@ -32,18 +34,18 @@
     <script>
         // --- MQTT Setup ---
         const MQTT_BROKER = "broker.hivemq.com";
-        const MQTT_PORT = 8000; // ใช้พอร์ต 8000 สำหรับ MQTT ผ่าน WebSocket
+        const MQTT_PORT = 8000; // Use port 8000 for MQTT over WebSockets
         const MQTT_COMMAND_TOPIC = "microbit/command";
         const MQTT_SENSORS_TOPIC = "microbit/sensors";
 
-        // สร้าง Client ID แบบสุ่มเพื่อหลีกเลี่ยงข้อผิดพลาดในการเชื่อมต่อ
+        // Create a random client ID to avoid conflicts
         const client = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, "web-client-" + parseInt(Math.random() * 100, 10));
 
-        // ตั้งค่า Callback Handlers
+        // Set callback handlers
         client.onConnectionLost = onConnectionLost;
         client.onMessageArrived = onMessageArrived;
 
-        // เชื่อมต่อ Client
+        // Connect the client
         client.connect({ onSuccess: onConnect });
 
         // Called when the client connects
@@ -83,13 +85,13 @@
         }
         
         // --- Output Pins ---
-        // กำหนดรายการขา Output ให้ตรงกับโค้ด Micro:bit
+        // Define the output pins to match the Micro:bit code
         const outputPins = [0, 1, 8, 12, 2, 13, 14, 15, 16];
         const outputPinsState = {};
         const pinContainer = document.getElementById('pin-container');
 
         // --- Input Sensors ---
-        // กำหนดรายการขา Input ให้ตรงกับโค้ด Micro:bit
+        // Define the input pins to match the Micro:bit code
         const inputPins = [1, 2, 5, 8, 11, 12, 13, 14, 15, 16];
         const sensorContainer = document.getElementById('sensor-container');
 
@@ -109,7 +111,7 @@
             }
         }
 
-        // สร้างปุ่มสำหรับขา Output แต่ละขาแบบ Dynamic
+        // Dynamically create buttons for each output pin
         outputPins.forEach(pin => {
             outputPinsState[pin] = "Off";
             const button = document.createElement('button');
@@ -121,20 +123,20 @@
                 const command = `P${pin}_${newState}`;
                 const message = new Paho.MQTT.Message(command);
                 message.destinationName = MQTT_COMMAND_TOPIC;
-                client.send(message); // ส่งคำสั่งผ่าน MQTT
+                client.send(message); // Send the command via MQTT
                 outputPinsState[pin] = newState;
                 updateOutputPinUI(pin, newState);
             };
             pinContainer.appendChild(button);
         });
 
-        // สร้างส่วนแสดงผลสำหรับขา Input แต่ละขาแบบ Dynamic
+        // Dynamically create display elements for each input pin
         inputPins.forEach(pin => {
             const sensorCard = document.createElement('div');
             sensorCard.className = 'bg-gray-700 p-4 rounded-lg shadow-inner';
             sensorCard.innerHTML = `
                 <h3 class="text-xl font-bold text-sky-300">Pin P${pin}</h3>
-                <p class="text-lg mt-2 text-gray-300">ค่าปัจจุบัน: <span id="sensor-p${pin}-value" class="font-mono text-xl text-yellow-300">--</span></p>
+                <p class="text-lg mt-2 text-gray-300">Current Value: <span id="sensor-p${pin}-value" class="font-mono text-xl text-yellow-300">--</span></p>
             `;
             sensorContainer.appendChild(sensorCard);
         });
