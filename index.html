@@ -1,4 +1,5 @@
-<!DOCTYPE html>//test
+<!DOCTYPE html>
+
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -49,6 +50,41 @@
             <button id="p2-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P2 (Off)
             </button>
+            <!-- P12 -->
+            <button id="p12-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P12 (On)
+            </button>
+            <button id="p12-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P12 (Off)
+            </button>
+            <!-- P13 -->
+            <button id="p13-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P13 (On)
+            </button>
+            <button id="p13-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P13 (Off)
+            </button>
+            <!-- P14 -->
+            <button id="p14-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P14 (On)
+            </button>
+            <button id="p14-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P14 (Off)
+            </button>
+            <!-- P15 -->
+            <button id="p15-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P15 (On)
+            </button>
+            <button id="p15-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P15 (Off)
+            </button>
+            <!-- P16 -->
+            <button id="p16-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P16 (On)
+            </button>
+            <button id="p16-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
+                P16 (Off)
+            </button>
         </div>
 
         <!-- Sensor Data Display -->
@@ -63,8 +99,9 @@
     <script>
         const MQTT_BROKER = "broker.hivemq.com";
         const UNIQUE_ID = "11222222";
-        const TOPIC = `microbit/${11222222}/command`;
-        const SENSORS_TOPIC = `microbit/${11222222}/sensors`;
+        // Fixed: Use UNIQUE_ID variable to construct the topic string
+        const TOPIC = `microbit/${UNIQUE_ID}/command`;
+        const SENSORS_TOPIC = `microbit/${UNIQUE_ID}/sensors`;
         
         const statusMessage = document.getElementById('status-message');
 
@@ -119,6 +156,16 @@
         document.getElementById('p1-off').addEventListener('click', () => publishCommand('P1_Off'));
         document.getElementById('p2-on').addEventListener('click', () => publishCommand('P2_On'));
         document.getElementById('p2-off').addEventListener('click', () => publishCommand('P2_Off'));
+        document.getElementById('p12-on').addEventListener('click', () => publishCommand('P12_On'));
+        document.getElementById('p12-off').addEventListener('click', () => publishCommand('P12_Off'));
+        document.getElementById('p13-on').addEventListener('click', () => publishCommand('P13_On'));
+        document.getElementById('p13-off').addEventListener('click', () => publishCommand('P13_Off'));
+        document.getElementById('p14-on').addEventListener('click', () => publishCommand('P14_On'));
+        document.getElementById('p14-off').addEventListener('click', () => publishCommand('P14_Off'));
+        document.getElementById('p15-on').addEventListener('click', () => publishCommand('P15_On'));
+        document.getElementById('p15-off').addEventListener('click', () => publishCommand('P15_Off'));
+        document.getElementById('p16-on').addEventListener('click', () => publishCommand('P16_On'));
+        document.getElementById('p16-off').addEventListener('click', () => publishCommand('P16_Off'));
     </script>
 </body>
 </html>
