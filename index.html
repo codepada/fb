@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -29,56 +28,48 @@
         </div>
 
         <div class="grid grid-cols-2 gap-4 mb-8">
-            <!-- P0 -->
             <button id="p0-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P0 (On)
             </button>
             <button id="p0-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P0 (Off)
             </button>
-            <!-- P1 -->
             <button id="p1-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P1 (On)
             </button>
             <button id="p1-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P1 (Off)
             </button>
-            <!-- P2 -->
             <button id="p2-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P2 (On)
             </button>
             <button id="p2-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P2 (Off)
             </button>
-            <!-- P12 -->
             <button id="p12-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P12 (On)
             </button>
             <button id="p12-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P12 (Off)
             </button>
-            <!-- P13 -->
             <button id="p13-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P13 (On)
             </button>
             <button id="p13-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P13 (Off)
             </button>
-            <!-- P14 -->
             <button id="p14-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P14 (On)
             </button>
             <button id="p14-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P14 (Off)
             </button>
-            <!-- P15 -->
             <button id="p15-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P15 (On)
             </button>
             <button id="p15-off" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P15 (Off)
             </button>
-            <!-- P16 -->
             <button id="p16-on" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-colors">
                 P16 (On)
             </button>
@@ -87,7 +78,6 @@
             </button>
         </div>
 
-        <!-- Sensor Data Display -->
         <div class="bg-gray-50 rounded-lg p-4 shadow-inner">
             <h3 class="text-xl font-semibold mb-2 text-gray-700">ข้อมูลเซนเซอร์</h3>
             <div id="sensor-data" class="text-gray-600 font-mono text-sm">
@@ -99,7 +89,6 @@
     <script>
         const MQTT_BROKER = "broker.hivemq.com";
         const UNIQUE_ID = "11222222";
-        // Fixed: Use UNIQUE_ID variable to construct the topic string
         const TOPIC = `microbit/${UNIQUE_ID}/command`;
         const SENSORS_TOPIC = `microbit/${UNIQUE_ID}/sensors`;
         
@@ -115,12 +104,16 @@
                 statusMessage.className = 'text-center p-3 mb-4 rounded-lg font-medium text-sm bg-blue-200 text-blue-800';
             }
         }
-
+        
+        // เราใช้ wss:// แทน ws:// เพื่อการเชื่อมต่อที่ปลอดภัย
+        // และใช้พอร์ต 8884 ซึ่งเป็นพอร์ตสำหรับ WebSocket ที่เข้ารหัส
+        // การใช้พอร์ต 8884 ช่วยให้เบราว์เซอร์สามารถเชื่อมต่อกับ MQTT broker ได้
         const client = mqtt.connect(`wss://${MQTT_BROKER}:8884`);
 
         client.on('connect', function () {
             console.log('Connected to MQTT Broker!');
             updateStatus('เชื่อมต่อสำเร็จ!', 'success');
+            // สมัครรับข้อมูลจาก topic สำหรับเซนเซอร์
             client.subscribe(SENSORS_TOPIC, function (err) {
                 if (!err) {
                     console.log(`Subscribed to ${SENSORS_TOPIC}`);
@@ -128,13 +121,14 @@
             });
         });
 
+        // จัดการข้อผิดพลาดในการเชื่อมต่อ
         client.on('error', function (error) {
             console.error('MQTT connection error:', error);
-            updateStatus('เกิดข้อผิดพลาดในการเชื่อมต่อ!', 'error');
+            updateStatus('เกิดข้อผิดพลาดในการเชื่อมต่อ! โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและพอร์ต.', 'error');
         });
 
+        // จัดการเมื่อได้รับข้อความจาก MQTT broker
         client.on('message', function (topic, message) {
-            // message is a Buffer
             const sensorData = message.toString();
             console.log(`Received sensor data from MQTT: ${sensorData}`);
             document.getElementById('sensor-data').textContent = sensorData;
@@ -142,6 +136,7 @@
 
         function publishCommand(command) {
             if (client.connected) {
+                // ส่งคำสั่งไปยัง MQTT broker
                 client.publish(TOPIC, command);
                 console.log(`Published command to MQTT: ${command}`);
             } else {
@@ -150,6 +145,7 @@
             }
         }
 
+        // เพิ่มตัวจัดการเหตุการณ์ (event listeners) สำหรับปุ่มแต่ละปุ่ม
         document.getElementById('p0-on').addEventListener('click', () => publishCommand('P0_On'));
         document.getElementById('p0-off').addEventListener('click', () => publishCommand('P0_Off'));
         document.getElementById('p1-on').addEventListener('click', () => publishCommand('P1_On'));
