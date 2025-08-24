@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Micro:bit MQTT Control</title>
+    <title>Micro:bit Output Control</title>
     <!-- Inter Font -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap">
     <!-- Tailwind CSS -->
@@ -15,11 +15,11 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
-                }
-            }
-        }
+                },
+            },
+        };
     </script>
-    <!-- Paho MQTT JavaScript Client - Using an alternative URL for improved stability -->
+    <!-- Paho MQTT JavaScript Client -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <style>
         body {
@@ -28,13 +28,51 @@
         .bg-gradient-primary {
             background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .bg-gradient-secondary {
-            background-image: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+
+        /* Styles for the new toggle switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
         }
-        .btn-pin {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #22c55e; /* green-500 */
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
@@ -67,100 +105,105 @@
         <!-- Pin Control Section -->
         <section class="space-y-4">
             <h2 class="text-xl font-semibold text-gray-700">ควบคุมพินดิจิตอล</h2>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <!-- Buttons for Digital Pins -->
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 btn-pin">
-                    <span class="text-base font-semibold text-gray-700">Pin 0</span>
-                    <div class="flex space-x-2">
-                        <button onclick="publishCommand('P0', 'On')" class="px-3 py-1 text-xs font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors">เปิด</button>
-                        <button onclick="publishCommand('P0', 'Off')" class="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">ปิด</button>
-                    </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="pin-control-container">
+                <!-- Pin 0 Control -->
+                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 0</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-P0" onchange="handleToggleChange('P0', this.checked)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 btn-pin">
-                    <span class="text-base font-semibold text-gray-700">Pin 1</span>
-                    <div class="flex space-x-2">
-                        <button onclick="publishCommand('P1', 'On')" class="px-3 py-1 text-xs font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors">เปิด</button>
-                        <button onclick="publishCommand('P1', 'Off')" class="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">ปิด</button>
-                    </div>
+                <!-- Pin 1 Control -->
+                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 1</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-P1" onchange="handleToggleChange('P1', this.checked)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 btn-pin">
-                    <span class="text-base font-semibold text-gray-700">Pin 8</span>
-                    <div class="flex space-x-2">
-                        <button onclick="publishCommand('P8', 'On')" class="px-3 py-1 text-xs font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors">เปิด</button>
-                        <button onclick="publishCommand('P8', 'Off')" class="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">ปิด</button>
-                    </div>
+                <!-- NEW: Pin 2 Control -->
+                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 2</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-P2" onchange="handleToggleChange('P2', this.checked)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 btn-pin">
-                    <span class="text-base font-semibold text-gray-700">Pin 12</span>
-                    <div class="flex space-x-2">
-                        <button onclick="publishCommand('P12', 'On')" class="px-3 py-1 text-xs font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors">เปิด</button>
-                        <button onclick="publishCommand('P12', 'Off')" class="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">ปิด</button>
-                    </div>
+                <!-- Pin 8 Control -->
+                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 8</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-P8" onchange="handleToggleChange('P8', this.checked)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 btn-pin">
-                    <span class="text-base font-semibold text-gray-700">Pin 13</span>
-                    <div class="flex space-x-2">
-                        <button onclick="publishCommand('P13', 'On')" class="px-3 py-1 text-xs font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors">เปิด</button>
-                        <button onclick="publishCommand('P13', 'Off')" class="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">ปิด</button>
-                    </div>
+                <!-- Pin 12 Control -->
+                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 12</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-P12" onchange="handleToggleChange('P12', this.checked)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 btn-pin">
-                    <span class="text-base font-semibold text-gray-700">Pin 14</span>
-                    <div class="flex space-x-2">
-                        <button onclick="publishCommand('P14', 'On')" class="px-3 py-1 text-xs font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors">เปิด</button>
-                        <button onclick="publishCommand('P14', 'Off')" class="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">ปิด</button>
-                    </div>
+                <!-- Pin 13 Control -->
+                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 13</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-P13" onchange="handleToggleChange('P13', this.checked)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 btn-pin">
-                    <span class="text-base font-semibold text-gray-700">Pin 15</span>
-                    <div class="flex space-x-2">
-                        <button onclick="publishCommand('P15', 'On')" class="px-3 py-1 text-xs font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors">เปิด</button>
-                        <button onclick="publishCommand('P15', 'Off')" class="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">ปิด</button>
-                    </div>
+                <!-- Pin 14 Control -->
+                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 14</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-P14" onchange="handleToggleChange('P14', this.checked)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 btn-pin">
-                    <span class="text-base font-semibold text-gray-700">Pin 16</span>
-                    <div class="flex space-x-2">
-                        <button onclick="publishCommand('P16', 'On')" class="px-3 py-1 text-xs font-medium text-white bg-green-500 hover:bg-green-600 rounded-md transition-colors">เปิด</button>
-                        <button onclick="publishCommand('P16', 'Off')" class="px-3 py-1 text-xs font-medium text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">ปิด</button>
-                    </div>
+                <!-- Pin 15 Control -->
+                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 15</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-P15" onchange="handleToggleChange('P15', this.checked)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
-            </div>
-        </section>
-
-        <!-- Sensor Data Display Section -->
-        <section class="space-y-2">
-            <h2 class="text-xl font-semibold text-gray-700">ค่าเซนเซอร์</h2>
-            <div id="sensor-data" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="p-3 bg-gray-50 rounded-lg shadow-sm">
-                    <span class="block text-sm font-medium text-gray-700">ข้อมูลจากเซนเซอร์จะแสดงที่นี่</span>
+                <!-- Pin 16 Control -->
+                <div class="bg-white rounded-lg p-3 shadow-md border border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-semibold text-gray-700 whitespace-nowrap">Pin 16</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-P16" onchange="handleToggleChange('P16', this.checked)">
+                        <span class="slider"></span>
+                    </label>
                 </div>
             </div>
         </section>
     </div>
 
     <script>
+        // --- MQTT Broker & Client Configuration ---
+        const HOST = 'broker.hivemq.com';
+        const PORT = 8884; // Secure WebSocket Port
+        let client;
+        let uniqueId;
+        const statusElement = document.getElementById('status');
+
+        // --- Event Listener for Page Load ---
         window.onload = function() {
-            // Check if Paho library is loaded. This is a crucial step.
+            // Check if Paho library is loaded.
             if (typeof Paho === 'undefined' || !Paho.MQTT || !Paho.MQTT.Client) {
-                const statusElement = document.getElementById('status');
-                statusElement.textContent = "Error: Paho script not loaded. Please try again later or check your internet connection.";
+                statusElement.textContent = "Error: Paho script not loaded.";
                 statusElement.style.color = "red";
-                console.error("Paho MQTT client is not loaded. The script link might be broken or blocked.");
+                console.error("Paho MQTT client is not loaded. Check the script link or internet connection.");
                 return;
             }
-
             initializeMQTT();
         };
 
+        // --- Main MQTT Initialization Function ---
         function initializeMQTT() {
-            const HOST = 'broker.hivemq.com';
-            const PORT = 8884; // Secure WebSocket Port for broker.hivemq.com
-            
-            let client;
-            let uniqueId;
-            const statusElement = document.getElementById('status');
-
             document.getElementById('connectBtn').addEventListener('click', () => {
                 uniqueId = document.getElementById('uniqueId').value;
                 if (!uniqueId) {
@@ -171,22 +214,22 @@
                 connectMQTT();
             });
 
-            // Function to establish MQTT connection
             function connectMQTT() {
                 statusElement.textContent = "สถานะ: กำลังเชื่อมต่อ...";
                 statusElement.style.color = "black";
-                // Paho requires the /mqtt path for WSS connections
-                client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", "web-" + Math.random().toString(16).substr(2, 8));
+                
+                // Client ID must be unique
+                const clientId = "web-" + Math.random().toString(16).substr(2, 8);
+                client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", clientId);
 
                 client.onConnectionLost = onConnectionLost;
-                client.onMessageArrived = onMessageArrived;
+                client.onMessageArrived = onMessageArrived; // This function is still needed to confirm successful connection messages
 
                 try {
-                    // useSSL: true is required for wss:// protocol
                     client.connect({
                         onSuccess: onConnect,
-                        useSSL: true, // IMPORTANT: Set to true for secure connection
-                        timeout: 3, // 3 seconds timeout
+                        useSSL: true, // IMPORTANT for secure connection
+                        timeout: 5,
                         onFailure: onFail
                     });
                 } catch (e) {
@@ -196,26 +239,20 @@
                 }
             }
 
-            // Called when the connection is successful
             function onConnect() {
                 console.log("Connected to MQTT Broker.");
                 statusElement.textContent = "สถานะ: เชื่อมต่อแล้ว";
                 statusElement.style.color = "green";
 
-                // Subscribe to the sensor data topic
-                const sensorTopic = `${uniqueId}/sensors`;
-                client.subscribe(sensorTopic);
-                console.log(`Subscribed to topic: ${sensorTopic}`);
+                // No need to subscribe to a sensor topic anymore
             }
-            
-            // Called when the connection fails
+
             function onFail(responseObject) {
                 console.log("Connection failed: " + responseObject.errorMessage);
                 statusElement.textContent = `สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`;
                 statusElement.style.color = "red";
             }
 
-            // Called when the connection is lost
             function onConnectionLost(responseObject) {
                 if (responseObject.errorCode !== 0) {
                     console.log("Connection lost: " + responseObject.errorMessage);
@@ -223,56 +260,47 @@
                     statusElement.style.color = "red";
                 }
             }
-
-            // Called when a message arrives
+            
+            // This function is now simplified as it no longer needs to process sensor data.
+            // It will only receive messages for debugging or future features if added.
             function onMessageArrived(message) {
                 console.log("Message arrived on topic " + message.destinationName + ": " + message.payloadString);
-                const payload = message.payloadString;
-                const sensorDataElement = document.getElementById('sensor-data');
-
-                // Handle sensor data messages
-                if (payload.startsWith("sensors:")) {
-                    const dataString = payload.substring(8);
-                    const dataPairs = dataString.split(',');
-                    
-                    let htmlContent = '';
-                    dataPairs.forEach(pair => {
-                        const [pin, value] = pair.split(':');
-                        htmlContent += `
-                            <div class="p-3 bg-white rounded-lg shadow-sm border border-gray-200">
-                                <span class="block text-sm font-medium text-gray-500">Pin ${pin}</span>
-                                <span class="block text-xl font-bold text-gray-800">${value}</span>
-                            </div>
-                        `;
-                    });
-                    if (htmlContent) {
-                        sensorDataElement.innerHTML = htmlContent;
-                    }
-                }
             }
-            
-            // Function to publish commands to the Micro:bit
-            window.publishCommand = function(pin, state) {
-                if (!client || !client.isConnected()) {
-                    statusElement.textContent = "Error: Not connected to MQTT.";
-                    statusElement.style.color = "red";
-                    return;
-                }
+        }
 
-                const topic = `${uniqueId}/commands`;
-                const payload = `${pin}_${state}`;
-                
-                const message = new Paho.MQTT.Message(payload);
-                message.destinationName = topic;
-                
-                try {
-                    client.send(message);
-                    console.log(`Published to ${topic}: ${payload}`);
-                } catch (e) {
-                    statusElement.textContent = `Error publishing: ${e.message}`;
-                    statusElement.style.color = "red";
-                    console.error("Publishing failed:", e);
-                }
+        // --- New Function to Handle Toggle Switch Changes ---
+        window.handleToggleChange = function(pin, isChecked) {
+            const state = isChecked ? 'On' : 'Off';
+            publishCommand(pin, state);
+        }
+
+        // --- Function to Publish Commands ---
+        function publishCommand(pin, state) {
+            if (!client || !client.isConnected()) {
+                statusElement.textContent = "Error: Not connected to MQTT.";
+                statusElement.style.color = "red";
+                // Reset the toggle switch state
+                const toggle = document.getElementById(`toggle-${pin}`);
+                toggle.checked = !toggle.checked;
+                return;
+            }
+
+            const topic = `${uniqueId}/commands`;
+            const payload = `${pin}_${state}`;
+            
+            const message = new Paho.MQTT.Message(payload);
+            message.destinationName = topic;
+            
+            try {
+                client.send(message);
+                console.log(`Published to ${topic}: ${payload}`);
+            } catch (e) {
+                statusElement.textContent = `Error publishing: ${e.message}`;
+                statusElement.style.color = "red";
+                console.error("Publishing failed:", e);
+                // Reset the toggle switch state on failure
+                const toggle = document.getElementById(`toggle-${pin}`);
+                toggle.checked = !toggle.checked;
             }
         }
     </script>
