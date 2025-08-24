@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
-    //81
+<html lang="th"> //81
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -88,7 +87,8 @@
     </div>
 
     <script>
-        const MQTT_BROKER = "broker.hivemq.com";
+        // เปลี่ยน MQTT Broker ไปที่ test.mosquitto.org ซึ่งมีความเสถียร
+        const MQTT_BROKER = "test.mosquitto.org";
         const UNIQUE_ID = "11222222";
         const TOPIC = `microbit/${UNIQUE_ID}/command`;
         const SENSORS_TOPIC = `microbit/${UNIQUE_ID}/sensors`;
@@ -106,7 +106,7 @@
             }
         }
         
-        // แก้ไข: ใช้พอร์ต 8081 ตามที่คุณแนะนำ
+        // ใช้พอร์ต 8081 ซึ่งเป็นพอร์ต WebSocket Secure (wss) สำหรับ test.mosquitto.org
         const client = mqtt.connect(`wss://${MQTT_BROKER}:8081`);
 
         client.on('connect', function () {
