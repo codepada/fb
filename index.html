@@ -19,8 +19,8 @@
             }
         }
     </script>
-    <!-- Paho MQTT JavaScript Client -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <!-- Paho MQTT JavaScript Client - Updated to a stable version (1.1.0) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js" type="text/javascript"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -143,8 +143,8 @@
         // MQTT Broker Settings - ต้องตรงกับ ESP32 และ Micro:bit
         // หน้าเว็บต้องใช้พอร์ต WebSocket
         const HOST = 'broker.hivemq.com';
-        const PORT = 8000; // WebSocket Port for broker.hivemq.com
-        const PROTOCOL = 'ws'; // Unencrypted WebSocket
+        const PORT = 8884; // Secure WebSocket Port for broker.hivemq.com
+        const PROTOCOL = 'wss'; // Encrypted WebSocket
         
         let client;
         let uniqueId;
@@ -164,16 +164,17 @@
         function connectMQTT() {
             statusElement.textContent = "สถานะ: กำลังเชื่อมต่อ...";
             statusElement.style.color = "black";
+            // Paho requires the /mqtt path for WSS connections
             client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", "web-" + Math.random().toString(16).substr(2, 8));
 
             client.onConnectionLost = onConnectionLost;
             client.onMessageArrived = onMessageArrived;
 
             try {
-                // useSSL: false is important for connecting to ws:// protocol
+                // useSSL: true is required for wss:// protocol
                 client.connect({
                     onSuccess: onConnect,
-                    useSSL: false,
+                    useSSL: true, // IMPORTANT: Set to true for secure connection
                     timeout: 3, // 3 seconds timeout
                     onFailure: onFail
                 });
