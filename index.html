@@ -3,77 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Micro:bit Control & Sensors</title>
+    <title>Micro:bit Control & Sensors (MQTT)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-        .btn {
-            @apply px-6 py-3 rounded-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 text-white;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #121212; color: #e0e0e0; }
+        .btn { @apply px-6 py-3 rounded-lg font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 text-white; }
     </style>
 </head>
 <body class="bg-gray-900 flex flex-col items-center justify-center min-h-screen p-4">
 
-    <!-- Control Panel Section -->
     <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-2xl mx-auto text-center mb-8">
         <h1 class="text-4xl font-bold mb-6 text-emerald-400">แผงควบคุม Micro:bit</h1>
-        <p class="text-lg mb-8 text-gray-400">ควบคุมสถานะของขา P1, P8, P12, P2, P13, P14, P15, P16</p>
-
-        <!-- Container for the output pins -->
-        <div id="pin-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-8">
-            <!-- Output pins will be dynamically added here by JavaScript -->
+        <p class="text-lg mb-8 text-gray-400">ควบคุมสถานะของขา P0, P1, P8, P12, P2, P13, P14, P15, P16</p>
+        <div id="pin-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-8"></div>
+    </div>
+    
+    <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-4xl mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-6 text-sky-400">ข้อมูลเซนเซอร์แบบเรียลไทม์</h2>
+        <p class="text-lg mb-8 text-gray-400">อ่านค่า Input จากขา Micro:bit ที่กำหนด</p>
+        <div id="sensor-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8"></div>
+        <div id="status-message" class="mt-4 text-center">
+            <p id="connection-status" class="text-yellow-400">กำลังเชื่อมต่อกับ MQTT Broker...</p>
         </div>
     </div>
     
-    <!-- Sensor Input Section - This section is now hidden -->
-    <div class="hidden">
-        <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-4xl mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-6 text-sky-400">ข้อมูลเซนเซอร์แบบเรียลไทม์</h2>
-            <p class="text-lg mb-8 text-gray-400">อ่านค่า Input จากทุกขาบน Micro:bit</p>
-
-            <div id="sensor-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
-                <!-- Sensor data will be dynamically added here -->
-            </div>
-
-            <!-- Connection status messages -->
-            <div id="status-message" class="mt-4 text-center">
-                <p id="connection-status" class="text-yellow-400">กำลังเชื่อมต่อกับ Firebase...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <script>
-        // Firebase configuration from the user's provided code
-        const firebaseConfig = {
-            apiKey: "AIzaSyC7cPAlLkhO0Qx2sItGGYqsA3Eqwm61KMk",
-            authDomain: "microbit-6e8fd.firebaseapp.com",
-            databaseURL: "https://microbit-6e8fd-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "microbit-6e8fd",
-            storageBucket: "microbit-6e8fd.firebasestorage.app",
-            messagingSenderId: "722971393740",
-            appId: "1:722971393740:web:ae8d1bdf7b4601f7664c69",
-            measurementId: "G-16B1FNBXFM"
-        };
+        // --- MQTT Setup ---
+        const MQTT_BROKER = "broker.hivemq.com";
+        const MQTT_PORT = 8000; // Port 8000 สำหรับ WebSocket-based MQTT
+        const MQTT_COMMAND_TOPIC = "microbit/command";
+        const MQTT_SENSORS_TOPIC = "microbit/sensors";
+
+        // สร้าง Client ID แบบสุ่มเพื่อหลีกเลี่ยงข้อผิดพลาดในการเชื่อมต่อ
+        const client = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, "web-client-" + parseInt(Math.random() * 100, 10));
+
+        // ตั้งค่า Callback Handlers
+        client.onConnectionLost = onConnectionLost;
+        client.onMessageArrived = onMessageArrived;
+
+        // เชื่อมต่อ Client
+        client.connect({ onSuccess: onConnect });
+
+        // Called when the client connects
+        function onConnect() {
+            console.log("Connected to MQTT Broker");
+            document.getElementById('connection-status').textContent = "เชื่อมต่อเรียบร้อยแล้ว!";
+            document.getElementById('connection-status').className = "text-green-500";
+            // Subscribe to the sensors topic to receive data from Micro:bit
+            client.subscribe(MQTT_SENSORS_TOPIC);
+        }
+
+        // Called when the client loses its connection
+        function onConnectionLost(responseObject) {
+            if (responseObject.errorCode !== 0) {
+                console.log("onConnectionLost:" + responseObject.errorMessage);
+                document.getElementById('connection-status').textContent = "ขาดการเชื่อมต่อ!";
+                document.getElementById('connection-status').className = "text-red-500";
+            }
+        }
+
+        // Called when a message arrives
+        function onMessageArrived(message) {
+            console.log("Message Arrived: " + message.payloadString);
+            const sensorData = message.payloadString;
+
+            const sensorPairs = sensorData.split(',');
+            sensorPairs.forEach(pair => {
+                const [pinName, value] = pair.split(':');
+                const pinNum = parseInt(pinName.replace('P', ''), 10);
+                if (!isNaN(pinNum)) {
+                    const valueElement = document.getElementById(`sensor-p${pinNum}-value`);
+                    if (valueElement) {
+                        valueElement.textContent = value;
+                    }
+                }
+            });
+        }
         
-        // Initialize Firebase app
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = app.database();
-        
-        // --- Configuration for Output Pins ---
-        const outputPins = [1, 8, 12, 2, 13, 14, 15, 16];
-        const outputPinsState = {}; // Object to track the state of each pin
-        const commandRef = database.ref('microbit/command');
+        // --- Output Pins ---
+        // กำหนดรายการขา Output ให้ตรงกับโค้ด Micro:bit
+        const outputPins = [0, 1, 8, 12, 2, 13, 14, 15, 16];
+        const outputPinsState = {};
         const pinContainer = document.getElementById('pin-container');
 
-        // Function to update the UI based on output pin state
+        // --- Input Sensors ---
+        // กำหนดรายการขา Input ให้ตรงกับโค้ด Micro:bit
+        const inputPins = [1, 2, 5, 8, 11, 12, 13, 14, 15, 16];
+        const sensorContainer = document.getElementById('sensor-container');
+
+        // Function to update the UI based on pin state
         function updateOutputPinUI(pin, state) {
             const button = document.getElementById(`pin-${pin}-btn`);
             if (button) {
@@ -82,53 +102,33 @@
                     button.classList.add('bg-green-500', 'hover:bg-green-600');
                     button.textContent = `P${pin} (On)`;
                 } else {
-                    button.classList.remove('bg-green-500', 'hover:bg-red-600');
+                    button.classList.remove('bg-green-500', 'hover:bg-green-600');
                     button.classList.add('bg-red-500', 'hover:bg-red-600');
                     button.textContent = `P${pin} (Off)`;
                 }
             }
         }
 
-        // Dynamically create buttons for each output pin with an initial state of "Off"
+        // สร้างปุ่มสำหรับขา Output แต่ละขาแบบ Dynamic
         outputPins.forEach(pin => {
-            outputPinsState[pin] = "Off"; // Set initial state to Off
+            outputPinsState[pin] = "Off";
             const button = document.createElement('button');
             button.id = `pin-${pin}-btn`;
-            button.className = 'btn bg-red-500 hover:bg-red-600'; // Default red color for "Off"
+            button.className = 'btn bg-red-500 hover:bg-red-600';
             button.textContent = `P${pin} (Off)`;
             button.onclick = () => {
                 const newState = outputPinsState[pin] === "On" ? "Off" : "On";
                 const command = `P${pin}_${newState}`;
-                commandRef.set(command).then(() => {
-                    console.log(`Command '${command}' sent to Firebase successfully.`);
-                }).catch((error) => {
-                    console.error("Error sending command to Firebase: ", error);
-                });
+                const message = new Paho.MQTT.Message(command);
+                message.destinationName = MQTT_COMMAND_TOPIC;
+                client.send(message); // ส่งคำสั่งผ่าน MQTT
+                outputPinsState[pin] = newState;
+                updateOutputPinUI(pin, newState);
             };
             pinContainer.appendChild(button);
         });
 
-        // Listen for changes in the Firebase command database
-        commandRef.on('value', (snapshot) => {
-            if (snapshot.exists()) {
-                const command = snapshot.val();
-                console.log("Firebase value changed:", command);
-                const [pinStr, state] = command.split('_');
-                const pin = parseInt(pinStr.replace('P', ''), 10);
-                if (!isNaN(pin) && outputPins.includes(pin)) {
-                    outputPinsState[pin] = state;
-                    updateOutputPinUI(pin, state);
-                }
-            }
-        });
-        
-        // --- Configuration for Input Sensors (Disabled) ---
-        // Array of ALL possible input pins on Micro:bit
-        const inputPins = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-        const sensorsRef = database.ref('microbit/sensors');
-        const sensorContainer = document.getElementById('sensor-container');
-        
-        // Dynamically create display elements for each input pin
+        // สร้างส่วนแสดงผลสำหรับขา Input แต่ละขาแบบ Dynamic
         inputPins.forEach(pin => {
             const sensorCard = document.createElement('div');
             sensorCard.className = 'bg-gray-700 p-4 rounded-lg shadow-inner';
@@ -136,37 +136,7 @@
                 <h3 class="text-xl font-bold text-sky-300">Pin P${pin}</h3>
                 <p class="text-lg mt-2 text-gray-300">ค่าปัจจุบัน: <span id="sensor-p${pin}-value" class="font-mono text-xl text-yellow-300">--</span></p>
             `;
-            // sensorContainer.appendChild(sensorCard); // This line is commented out to prevent rendering
-        });
-        
-        // Listen for changes in the Firebase sensors database
-        // This listener is still active in the background but the UI elements are not rendered
-        sensorsRef.on('value', (snapshot) => {
-            if (snapshot.exists()) {
-                const sensorData = snapshot.val();
-                console.log("Sensor data received:", sensorData);
-                // Loop through the data and update the corresponding UI elements
-                for (const pin in sensorData) {
-                    const valueElement = document.getElementById(`sensor-p${pin}-value`);
-                    if (valueElement) {
-                        // valueElement.textContent = sensorData[pin]; // This line is commented out to prevent UI update
-                    }
-                }
-            }
-        }, (error) => {
-            console.error("Firebase sensor listener error:", error);
-        });
-
-        // Initial setup for the status message
-        window.addEventListener('load', () => {
-            const statusElement = document.getElementById('connection-status');
-            if (app && database) {
-                statusElement.textContent = "เชื่อมต่อกับ Firebase เรียบร้อยแล้ว!";
-                statusElement.className = "text-green-500";
-            } else {
-                statusElement.textContent = "เกิดข้อผิดพลาด: ไม่สามารถเชื่อมต่อ Firebase ได้.";
-                statusElement.className = "text-red-500";
-            }
+            sensorContainer.appendChild(sensorCard);
         });
     </script>
 </body>
