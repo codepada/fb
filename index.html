@@ -141,9 +141,10 @@
 
     <script>
         // MQTT Broker Settings - ต้องตรงกับ ESP32 และ Micro:bit
-        const HOST = 'test.mosquitto.org';
-        const PORT = 80;
-        const PROTOCOL = 'ws'; // WebSocket protocol
+        // หน้าเว็บต้องใช้พอร์ต WebSocket
+        const HOST = 'broker.hivemq.com';
+        const PORT = 8000; // WebSocket Port for broker.hivemq.com
+        const PROTOCOL = 'ws'; // Unencrypted WebSocket
         
         let client;
         let uniqueId;
@@ -169,7 +170,7 @@
             client.onMessageArrived = onMessageArrived;
 
             try {
-                // The useSSL: false is important for connecting to ws:// protocol
+                // useSSL: false is important for connecting to ws:// protocol
                 client.connect({
                     onSuccess: onConnect,
                     useSSL: false,
