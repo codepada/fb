@@ -34,30 +34,26 @@
     <script>
         // --- MQTT Setup ---
         const MQTT_BROKER = "broker.hivemq.com";
-        const MQTT_PORT = 8000; // Use port 8000 for MQTT over WebSockets
-        const MQTT_COMMAND_TOPIC = "microbit/command";
-        const MQTT_SENSORS_TOPIC = "microbit/sensors";
+        const MQTT_PORT = 8000;
+        
+        // ใช้ UNIQUE_ID ตัวเดียวกันกับในโค้ด Micro:bit
+        const UNIQUE_ID = "11222222";
+        const MQTT_COMMAND_TOPIC = "microbit/" + UNIQUE_ID + "/command";
+        const MQTT_SENSORS_TOPIC = "microbit/" + UNIQUE_ID + "/sensors";
 
-        // Create a random client ID to avoid conflicts
         const client = new Paho.MQTT.Client(MQTT_BROKER, MQTT_PORT, "web-client-" + parseInt(Math.random() * 100, 10));
 
-        // Set callback handlers
         client.onConnectionLost = onConnectionLost;
         client.onMessageArrived = onMessageArrived;
-
-        // Connect the client
         client.connect({ onSuccess: onConnect });
 
-        // Called when the client connects
         function onConnect() {
             console.log("Connected to MQTT Broker");
             document.getElementById('connection-status').textContent = "เชื่อมต่อเรียบร้อยแล้ว!";
             document.getElementById('connection-status').className = "text-green-500";
-            // Subscribe to the sensors topic to receive data from Micro:bit
             client.subscribe(MQTT_SENSORS_TOPIC);
         }
 
-        // Called when the client loses its connection
         function onConnectionLost(responseObject) {
             if (responseObject.errorCode !== 0) {
                 console.log("onConnectionLost:" + responseObject.errorMessage);
@@ -66,7 +62,6 @@
             }
         }
 
-        // Called when a message arrives
         function onMessageArrived(message) {
             console.log("Message Arrived: " + message.payloadString);
             const sensorData = message.payloadString;
@@ -84,18 +79,13 @@
             });
         }
         
-        // --- Output Pins ---
-        // Define the output pins to match the Micro:bit code
         const outputPins = [0, 1, 8, 12, 2, 13, 14, 15, 16];
         const outputPinsState = {};
         const pinContainer = document.getElementById('pin-container');
 
-        // --- Input Sensors ---
-        // Define the input pins to match the Micro:bit code
         const inputPins = [1, 2, 5, 8, 11, 12, 13, 14, 15, 16];
         const sensorContainer = document.getElementById('sensor-container');
 
-        // Function to update the UI based on pin state
         function updateOutputPinUI(pin, state) {
             const button = document.getElementById(`pin-${pin}-btn`);
             if (button) {
@@ -111,7 +101,6 @@
             }
         }
 
-        // Dynamically create buttons for each output pin
         outputPins.forEach(pin => {
             outputPinsState[pin] = "Off";
             const button = document.createElement('button');
@@ -123,14 +112,13 @@
                 const command = `P${pin}_${newState}`;
                 const message = new Paho.MQTT.Message(command);
                 message.destinationName = MQTT_COMMAND_TOPIC;
-                client.send(message); // Send the command via MQTT
+                client.send(message);
                 outputPinsState[pin] = newState;
                 updateOutputPinUI(pin, newState);
             };
             pinContainer.appendChild(button);
         });
 
-        // Dynamically create display elements for each input pin
         inputPins.forEach(pin => {
             const sensorCard = document.createElement('div');
             sensorCard.className = 'bg-gray-700 p-4 rounded-lg shadow-inner';
