@@ -32,10 +32,10 @@
                         'action-yellow': '#ECC278',
                         'action-green': '#62C2BF',
                         'action-blue': '#5C8DCA',
-                        'pin-high': '#d1fae5', // Light green for HIGH status
-                        'pin-low': '#fee2e2', // Light red for LOW status
-                        'pin-analog': '#e0f2fe', // Light blue for Analog status
-                        'pin-default': '#E8E2E6', // Default card color
+                        'pin-high': '#d1fae5', //
+                        'pin-low': '#fee2e2', //
+                        'pin-analog': '#e0f2fe',
+                        'pin-default': '#E8E2E6',
                     },
                 },
             },
@@ -43,7 +43,7 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <style>
-        /* General body and container styles */
+        
         body {
             font-family: 'Inter', sans-serif;
             background-color: #E9E3E8;
@@ -70,7 +70,6 @@
             transition: transform 0.3s ease-in-out;
         }
 
-        /* Sidebar and Hamburger Menu styles */
         .sidebar {
             position: fixed;
             top: 0;
@@ -120,7 +119,7 @@
             display: none;
         }
 
-        /* New styles for the fixed connection status indicator */
+       
         .connection-status-container {
             position: fixed;
             top: 1rem;
@@ -563,9 +562,10 @@
             const connectBtn = document.getElementById('connectBtn');
             if (connectBtn) {
                 connectBtn.addEventListener('click', () => {
-                    uniqueId = document.getElementById('uniqueId').value;
+                    uniqueId = document.getElementById('uniqueId').value.trim();
                     if (!uniqueId) {
                         updateConnectionStatus("Error: โปรดใส่ ID เฉพาะ", "red");
+                        showModal("ID ไม่ถูกต้อง", "โปรดใส่ ID ที่ตรงกับ Micro:bit ของคุณ");
                         return;
                     }
                     connectMQTT();
@@ -608,7 +608,7 @@
                 
         function handlePageChange(pageId) {
             // Check if we are leaving the Pin Status page.
-            // If the active mode was 'pinStatus' and the new page is not 'pin-status',
+            // If the active mode was 'pinStatus' and the new page is not 'page-pin-status',
             // send the command to stop the data stream.
             if (activeMode === 'pinStatus' && pageId !== 'page-pin-status') {
                 console.log("Leaving Pin Status page. Sending 'send_pin_data_enabled=False'");
@@ -656,7 +656,7 @@
         function updatePageStatus(message, pageId) {
             let statusElement;
             if (pageId === 'page-connect') {
-                statusElement = document.getElementById('page-status-connect');
+                statusElement = document.getElementById('page-status');
             } else if (pageId === 'page-gamepad') {
                 statusElement = document.getElementById('page-status-gamepad');
             } else if (pageId === 'page-pins') {
@@ -733,20 +733,24 @@
             const statusTopic = `${uniqueId}/status`;
             if (message.destinationName === statusTopic) {
                 try {
-                    const pinData = JSON.parse(message.payloadString);
-                    console.log("Received pin data:", pinData);
+                    // Correctly access the nested 'pins' object
+                    const receivedData = JSON.parse(message.payloadString);
+                    const pinsData = receivedData.pins;
+                    console.log("Received pin data:", pinsData);
 
                     // Update the UI for each pin in the received data
                     // โดยวนลูปจาก statusPins ที่คุณกำหนดไว้
                     statusPins.forEach(pin => {
                         const pinId = pin.id;
-                        if (pinData.hasOwnProperty(pinId)) {
-                            const value = pinData[pinId];
+                        // Check if the received data has a property for this pin
+                        if (pinsData.hasOwnProperty(pinId)) {
+                            const value = pinsData[pinId];
                             updatePinStatusCard(pinId, value);
                         }
                     });
                 } catch (e) {
                     console.error("Failed to parse pin status message:", e);
+                    showModal("ข้อมูลไม่ถูกต้อง", "ไม่สามารถอ่านข้อมูลสถานะ Pin ที่ได้รับมาได้");
                 }
             } else if (message.destinationName === `${uniqueId}/pincontrol`) {
                 // Handle a response from the pin control commands if necessary
@@ -811,34 +815,6 @@
             publishCommand('commands', `${pin}=${state}`);
         }
 
-        window.publishCommand = function(topicSuffix, payload) {
-            const statusElement = document.getElementById('status');
-            if (!client || !client.isConnected()) {
-                const message = `Error: Not connected to MQTT. Cannot send command "${payload}".`;
-                console.error(message);
-                if (statusElement) {
-                    statusElement.textContent = "Error: Not connected to MQTT.";
-                    statusElement.style.color = "red";
-                }
-                return;
-            }
-
-            const topic = `${uniqueId}/${topicSuffix}`;
-            const message = new Paho.MQTT.Message(payload);
-            message.destinationName = topic;
-                
-            try {
-                client.send(message);
-                console.log(`Published to ${topic}: ${payload}`);
-            } catch (e) {
-                if (statusElement) {
-                    statusElement.textContent = `Error publishing: ${e.message}`;
-                    statusElement.style.color = "red";
-                }
-                console.error("Publishing failed:", e);
-            }
-        }
-
         // --- Pin Status Functions ---
                 
             
@@ -896,7 +872,7 @@
             }
         }
                 
-        // --- Custom Message Modal UI Logic ---
+        // --- Custom Message Modal UI Logic ---\
         const modal = document.getElementById('messageModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
