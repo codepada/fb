@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Micro:bit Multi-Page Control</title>
-    <!-- Use Inter font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -26,13 +24,6 @@
                             'accent-2': '#A9B3CE',
                             'accent-3': '#C2D1C1',
                         },
-                        'gamepad-bg': '#FF6B6B',
-                        'gamepad-blue': '#4ECDC4',
-                        'gamepad-dark': '#48576E',
-                        'gamepad-orange': '#FF805B',
-                        'gamepad-yellow': '#F3C969',
-                        'gamepad-green': '#A6E5D3',
-                        // New colors matching the image
                         'ui-bg': '#E9E3E8',
                         'gamepad-base': '#424F64',
                         'dpad-green': '#65C8BF',
@@ -44,6 +35,7 @@
                         'pin-high': '#d1fae5', // Light green for HIGH status
                         'pin-low': '#fee2e2', // Light red for LOW status
                         'pin-analog': '#e0f2fe', // Light blue for Analog status
+                        'pin-default': '#E8E2E6', // Default card color
                     },
                 },
             },
@@ -51,17 +43,15 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <style>
+        /* General body and container styles */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #E9E3E8;
             color: #5C5470;
         }
-
         .bg-gradient-primary {
             background-image: linear-gradient(135deg, #B985A9 0%, #A9B3CE 100%);
         }
-
-        /* --- Main Content and Sidebar Styles --- */
         .container-wrapper {
             position: relative;
             display: flex;
@@ -70,7 +60,6 @@
             min-height: 100vh;
             padding: 1rem;
         }
-
         .main-content {
             width: 100%;
             max-width: 600px;
@@ -81,6 +70,7 @@
             transition: transform 0.3s ease-in-out;
         }
 
+        /* Sidebar and Hamburger Menu styles */
         .sidebar {
             position: fixed;
             top: 0;
@@ -96,11 +86,9 @@
             flex-direction: column;
             align-items: flex-start;
         }
-
         .sidebar.open {
             left: 0;
         }
-
         .sidebar-link {
             width: 100%;
             padding: 1rem;
@@ -112,8 +100,6 @@
         .sidebar-link:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
-
-        /* Hamburger menu button */
         .hamburger-btn {
             position: fixed;
             top: 1rem;
@@ -130,13 +116,26 @@
             width: 24px;
             height: 24px;
         }
-
-        /* Page specific styles */
         .hidden-page {
             display: none;
         }
 
-        /* --- Gamepad Styles (Updated to fix layout) --- */
+        /* New styles for the fixed connection status indicator */
+        .connection-status-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #E8E2E6;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Gamepad styles */
         .gamepad-container {
             background-color: #E9E3E8;
             padding: 2.5rem 2rem;
@@ -145,7 +144,6 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        
         .gamepad-inner {
             background-color: #424F64;
             border-radius: 1.5rem;
@@ -154,8 +152,6 @@
             justify-content: space-between;
             align-items: center;
         }
-
-        /* Control Button Base Styles */
         .control-button {
             display: flex;
             justify-content: center;
@@ -171,13 +167,10 @@
             overflow: hidden;
             z-index: 1;
         }
-
         .control-button:active, .control-button.active {
             transform: scale(0.95);
             box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 0 10px 2px var(--button-color);
         }
-
-        /* D-Pad Styles - Updated for vertical/horizontal alignment */
         .dpad-container {
             display: grid;
             grid-template-areas:
@@ -190,7 +183,6 @@
             background-color: #424F64;
             border-radius: 4px;
         }
-        
         .dpad-button {
             width: 45px;
             height: 45px;
@@ -220,20 +212,16 @@
             width: 45px;
             height: 45px;
         }
-
-        /* Action Button Styles - Updated to be all circular and in a new layout */
         .action-buttons {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
         }
-        
         .action-row {
             display: flex;
             gap: 1.5rem;
             justify-content: center;
         }
-
         .action-buttons button {
             width: 50px;
             height: 50px;
@@ -243,26 +231,23 @@
             justify-content: center;
             align-items: center;
         }
-        
         .btn-h { background-color: #E97262; --button-color: #E97262; }
         .btn-j { background-color: #5C8DCA; --button-color: #5C8DCA; }
         .btn-k { background-color: #ECC278; --button-color: #ECC278; }
         .btn-l { background-color: #62C2BF; --button-color: #62C2BF; }
 
-        /* Styles for the new toggle switch */
+        /* Styles for the new toggle switch and analog slider */
         .toggle-switch {
             position: relative;
             display: inline-block;
             width: 60px;
             height: 34px;
         }
-
         .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
-
         .slider {
             position: absolute;
             cursor: pointer;
@@ -274,7 +259,6 @@
             transition: .4s;
             border-radius: 34px;
         }
-
         .slider:before {
             position: absolute;
             content: "";
@@ -286,13 +270,36 @@
             transition: .4s;
             border-radius: 50%;
         }
-
         input:checked + .slider {
-            background-color: #A6E5D3;
+            background-color: #65C8BF;
         }
-
         input:checked + .slider:before {
             transform: translateX(26px);
+        }
+        input:disabled + .slider {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+        input:disabled + .slider:before {
+            background-color: #bbb;
+        }
+        .analog-slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: #e0f2fe;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .analog-slider-container input[type="range"] {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        .analog-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
         }
 
         /* Styles for Pin Status Page */
@@ -312,6 +319,41 @@
         .pin-card.analog {
             background-color: #e0f2fe; /* Blue */
         }
+
+        /* Custom Modal UI */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s;
+        }
+        .modal.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background-color: #E8E2E6;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-out;
+        }
+        .modal.visible .modal-content {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="bg-ui-bg min-h-screen">
@@ -320,6 +362,11 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
             <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
         </svg>
+    </div>
+
+    <div class="connection-status-container">
+        <div id="connection-status-circle" class="w-3 h-3 rounded-full bg-red-500"></div>
+        <div id="connection-status-text" class="font-medium text-new-pastel-text">สถานะ: ไม่ได้เชื่อมต่อ</div>
     </div>
 
     <div id="sidebar" class="sidebar">
@@ -331,19 +378,18 @@
 
     <div class="container-wrapper">
         <div class="main-content">
-            <div id="status" class="text-center font-medium my-4">สถานะ: ไม่ได้เชื่อมต่อ</div>
-
             <section id="page-connect" class="space-y-4">
                 <h2 class="text-xl font-semibold text-center text-new-pastel-text">เชื่อมต่อกับ Micro:bit</h2>
                 <div class="p-4 bg-new-pastel-card rounded-lg shadow-sm">
                     <label for="uniqueId" class="block text-sm font-medium text-new-pastel-text">ตั้งค่า ID ให้ตรงกับ Microbit</label>
-                    <input type="text" id="uniqueId" value="11222222" placeholder="ใส่ ID เฉพาะที่นี่"
+                    <input type="text" id="uniqueId" value="microbit-control" placeholder="ใส่ ID เฉพาะที่นี่"
                         class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-sm focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
                 </div>
                 <button id="connectBtn"
                     class="w-full bg-gradient-primary text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
                     เชื่อมต่อกับ Broker
                 </button>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status"></div>
             </section>
 
             <section id="page-gamepad" class="hidden-page">
@@ -351,117 +397,134 @@
                 <div class="gamepad-container">
                     <div class="gamepad-inner">
                         <div class="dpad-container">
-                            <button id="dpad-up" class="dpad-button dpad-up" ontouchstart="publishCommand('gamepad', 'UP_PRESSED')" ontouchend="publishCommand('gamepad', 'UP_RELEASED')" onmousedown="publishCommand('gamepad', 'UP_PRESSED')" onmouseup="publishCommand('gamepad', 'UP_RELEASED')">↑</button>
-                            <button id="dpad-left" class="dpad-button dpad-left" ontouchstart="publishCommand('gamepad', 'LEFT_PRESSED')" ontouchend="publishCommand('gamepad', 'LEFT_RELEASED')" onmousedown="publishCommand('gamepad', 'LEFT_PRESSED')" onmouseup="publishCommand('gamepad', 'LEFT_RELEASED')">←</button>
+                            <button id="dpad-up" class="dpad-button dpad-up" ontouchstart="publishCommand('gamepad', 'UP_PRESSED', true)" ontouchend="publishCommand('gamepad', 'UP_RELEASED', false)" onmousedown="publishCommand('gamepad', 'UP_PRESSED', true)" onmouseup="publishCommand('gamepad', 'UP_RELEASED', false)">↑</button>
+                            <button id="dpad-left" class="dpad-button dpad-left" ontouchstart="publishCommand('gamepad', 'LEFT_PRESSED', true)" ontouchend="publishCommand('gamepad', 'LEFT_RELEASED', false)" onmousedown="publishCommand('gamepad', 'LEFT_PRESSED', true)" onmouseup="publishCommand('gamepad', 'LEFT_RELEASED', false)">←</button>
                             <div class="dpad-center"></div>
-                            <button id="dpad-right" class="dpad-button dpad-right" ontouchstart="publishCommand('gamepad', 'RIGHT_PRESSED')" ontouchend="publishCommand('gamepad', 'RIGHT_RELEASED')" onmousedown="publishCommand('gamepad', 'RIGHT_PRESSED')" onmouseup="publishCommand('gamepad', 'RIGHT_RELEASED')">→</button>
-                            <button id="dpad-down" class="dpad-button dpad-down" ontouchstart="publishCommand('gamepad', 'DOWN_PRESSED')" ontouchend="publishCommand('gamepad', 'DOWN_RELEASED')" onmousedown="publishCommand('gamepad', 'DOWN_PRESSED')" onmouseup="publishCommand('gamepad', 'DOWN_RELEASED')">↓</button>
+                            <button id="dpad-right" class="dpad-button dpad-right" ontouchstart="publishCommand('gamepad', 'RIGHT_PRESSED', true)" ontouchend="publishCommand('gamepad', 'RIGHT_RELEASED', false)" onmousedown="publishCommand('gamepad', 'RIGHT_PRESSED', true)" onmouseup="publishCommand('gamepad', 'RIGHT_RELEASED', false)">→</button>
+                            <button id="dpad-down" class="dpad-button dpad-down" ontouchstart="publishCommand('gamepad', 'DOWN_PRESSED', true)" ontouchend="publishCommand('gamepad', 'DOWN_RELEASED', false)" onmousedown="publishCommand('gamepad', 'DOWN_PRESSED', true)" onmouseup="publishCommand('gamepad', 'DOWN_RELEASED', false)">↓</button>
                         </div>
-                        
+                    
                         <div class="action-buttons">
                             <div class="action-row">
-                                <button id="btn-h" class="control-button btn-h" ontouchstart="publishCommand('gamepad', 'H_PRESSED')" ontouchend="publishCommand('gamepad', 'H_RELEASED')" onmousedown="publishCommand('gamepad', 'H_PRESSED')" onmouseup="publishCommand('gamepad', 'H_RELEASED')">H</button>
-                                <button id="btn-j" class="control-button btn-j" ontouchstart="publishCommand('gamepad', 'J_PRESSED')" ontouchend="publishCommand('gamepad', 'J_RELEASED')" onmousedown="publishCommand('gamepad', 'J_PRESSED')" onmouseup="publishCommand('gamepad', 'J_RELEASED')">J</button>
+                                <button id="btn-h" class="control-button btn-h" ontouchstart="publishCommand('gamepad', 'H_PRESSED', true)" ontouchend="publishCommand('gamepad', 'H_RELEASED', false)" onmousedown="publishCommand('gamepad', 'H_PRESSED', true)" onmouseup="publishCommand('gamepad', 'H_RELEASED', false)">H</button>
+                                <button id="btn-j" class="control-button btn-j" ontouchstart="publishCommand('gamepad', 'J_PRESSED', true)" ontouchend="publishCommand('gamepad', 'J_RELEASED', false)" onmousedown="publishCommand('gamepad', 'J_PRESSED', true)" onmouseup="publishCommand('gamepad', 'J_RELEASED', false)">J</button>
                             </div>
                             <div class="action-row">
-                                <button id="btn-k" class="control-button btn-k" ontouchstart="publishCommand('gamepad', 'K_PRESSED')" ontouchend="publishCommand('gamepad', 'K_RELEASED')" onmousedown="publishCommand('gamepad', 'K_PRESSED')" onmouseup="publishCommand('gamepad', 'K_RELEASED')">K</button>
-                                <button id="btn-l" class="control-button btn-l" ontouchstart="publishCommand('gamepad', 'L_PRESSED')" ontouchend="publishCommand('gamepad', 'L_RELEASED')" onmousedown="publishCommand('gamepad', 'L_PRESSED')" onmouseup="publishCommand('gamepad', 'L_RELEASED')">L</button>
+                                <button id="btn-k" class="control-button btn-k" ontouchstart="publishCommand('gamepad', 'K_PRESSED', true)" ontouchend="publishCommand('gamepad', 'K_RELEASED', false)" onmousedown="publishCommand('gamepad', 'K_PRESSED', true)" onmouseup="publishCommand('gamepad', 'K_RELEASED', false)">K</button>
+                                <button id="btn-l" class="control-button btn-l" ontouchstart="publishCommand('gamepad', 'L_PRESSED', true)" ontouchend="publishCommand('gamepad', 'L_RELEASED', false)" onmousedown="publishCommand('gamepad', 'L_PRESSED', true)" onmouseup="publishCommand('gamepad', 'L_RELEASED', false)">L</button>
                             </div>
                         </div>
                     </div>
                 </div>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-gamepad"></div>
             </section>
 
             <section id="page-pins" class="hidden-page space-y-4">
-                <h2 class="text-xl font-semibold text-new-pastel-text">ควบคุมพินดิจิตอล</h2>
+                <h2 class="text-xl font-semibold text-new-pastel-text">Pin Control</h2>
+                <p class="text-gray-500 text-sm">
+                    ใช้สวิตช์สำหรับ Digital Pins (เปิด/ปิด)
+                </p>
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="pin-control-container">
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 0</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P0" onchange="handleToggleChange('P0', this.checked)">
+                            <input type="checkbox" id="toggle-P0" class="pin-control-toggle" onchange="handleToggleChange('P0', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 1</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P1" onchange="handleToggleChange('P1', this.checked)">
+                            <input type="checkbox" id="toggle-P1" class="pin-control-toggle" onchange="handleToggleChange('P1', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 2</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P2" onchange="handleToggleChange('P2', this.checked)">
+                            <input type="checkbox" id="toggle-P2" class="pin-control-toggle" onchange="handleToggleChange('P2', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 8</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P8" onchange="handleToggleChange('P8', this.checked)">
+                            <input type="checkbox" id="toggle-P8" class="pin-control-toggle" onchange="handleToggleChange('P8', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 12</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P12" onchange="handleToggleChange('P12', this.checked)">
+                            <input type="checkbox" id="toggle-P12" class="pin-control-toggle" onchange="handleToggleChange('P12', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 13</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P13" onchange="handleToggleChange('P13', this.checked)">
+                            <input type="checkbox" id="toggle-P13" class="pin-control-toggle" onchange="handleToggleChange('P13', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 14</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P14" onchange="handleToggleChange('P14', this.checked)">
+                            <input type="checkbox" id="toggle-P14" class="pin-control-toggle" onchange="handleToggleChange('P14', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 15</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P15" onchange="handleToggleChange('P15', this.checked)">
+                            <input type="checkbox" id="toggle-P15" class="pin-control-toggle" onchange="handleToggleChange('P15', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 16</span>
                         <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P16" onchange="handleToggleChange('P16', this.checked)">
+                            <input type="checkbox" id="toggle-P16" class="pin-control-toggle" onchange="handleToggleChange('P16', this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
                 </div>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pins"></div>
             </section>
             
-            <!-- NEW SECTION FOR PIN STATUS -->
             <section id="page-pin-status" class="hidden-page">
                 <h2 class="text-xl font-semibold text-center text-new-pastel-text mb-4">สถานะ Pin ของ Micro:bit</h2>
-                <p class="text-gray-500 mb-6 text-center">
-                    
+                <p class="text-gray-500 mb-6 text-center text-sm">
+                    อัปเดตสถานะ Pin แบบเรียลไทม์จาก Micro:bit
                 </p>
                 <div id="pin-status-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    <!-- Pin cards will be inserted here by JavaScript -->
-                </div>
+                    </div>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pin-status"></div>
             </section>
 
         </div>
     </div>
 
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle" class="text-lg font-bold text-new-pastel-text mb-2"></h3>
+            <p id="modalMessage" class="text-new-pastel-text mb-4"></p>
+            <button id="modalCloseBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+                ปิด
+            </button>
+        </div>
+    </div>
+
     <script>
+        let activeMode = 'none';
+        let isConnected = false;
+
         // --- MQTT Broker & Client Configuration ---
         const HOST = 'broker.hivemq.com';
         const PORT = 8884; // Secure WebSocket Port
         let client;
         let uniqueId;
-        
+              
         // --- Define the pins you want to display for status ---
         const statusPins = [
             { id: 'P0', name: 'Pin 0', type: 'analog' },
@@ -469,6 +532,7 @@
             { id: 'P2', name: 'Pin 2', type: 'analog' },
             { id: 'P5', name: 'Pin 5', type: 'digital' },
             { id: 'P8', name: 'Pin 8', type: 'digital' },
+            { id: 'P9', name: 'Pin 9', type: 'digital' },
             { id: 'P11', name: 'Pin 11', type: 'digital' },
             { id: 'P12', name: 'Pin 12', type: 'digital' },
             { id: 'P13', name: 'Pin 13', type: 'digital' },
@@ -480,31 +544,28 @@
         // --- Event Listener for Page Load ---
         window.onload = function() {
             if (typeof Paho === 'undefined' || !Paho.MQTT || !Paho.MQTT.Client) {
-                const statusElement = document.getElementById('status');
-                if (statusElement) {
-                    statusElement.textContent = "Error: Paho script not loaded.";
-                    statusElement.style.color = "red";
+                const connectionTextElement = document.getElementById('connection-status-text');
+                if (connectionTextElement) {
+                    connectionTextElement.textContent = "Error: Paho script not loaded.";
+                    connectionTextElement.style.color = "red";
                 }
                 console.error("Paho MQTT client is not loaded. Check the script link or internet connection.");
                 return;
             }
             initializeMQTT();
+            // Start on the Connect page
             showPage(null, 'page-connect');
             createPinStatusCards();
         };
 
         // --- Main MQTT Initialization Function ---
         function initializeMQTT() {
-            const statusElement = document.getElementById('status');
             const connectBtn = document.getElementById('connectBtn');
             if (connectBtn) {
                 connectBtn.addEventListener('click', () => {
                     uniqueId = document.getElementById('uniqueId').value;
                     if (!uniqueId) {
-                        if (statusElement) {
-                            statusElement.textContent = "Error: Please enter a unique ID.";
-                            statusElement.style.color = "red";
-                        }
+                        updateConnectionStatus("Error: โปรดใส่ ID เฉพาะ", "red");
                         return;
                     }
                     connectMQTT();
@@ -513,12 +574,14 @@
                 console.error("Connect button not found.");
             }
         }
-        
+                
+        // Toggles the visibility of the sidebar menu
         window.toggleSidebar = function() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('open');
         }
 
+        // Handles showing a specific page and triggering page-specific actions
         window.showPage = function(event, pageId) {
             if (event) {
                 event.preventDefault();
@@ -537,14 +600,78 @@
             if (sidebar) {
                 sidebar.classList.remove('open');
             }
+
+            // Trigger action based on the selected page
+            handlePageChange(pageId);
+        }
+
+                
+        function handlePageChange(pageId) {
+            // Check if we are leaving the Pin Status page.
+            // If the active mode was 'pinStatus' and the new page is not 'pin-status',
+            // send the command to stop the data stream.
+            if (activeMode === 'pinStatus' && pageId !== 'page-pin-status') {
+                console.log("Leaving Pin Status page. Sending 'send_pin_data_enabled=False'");
+                publishCommand('commands', 'send_pin_data_enabled=False');
+            }
+                
+            // Now, set the new active mode and send necessary commands
+            if (pageId === 'page-gamepad') {
+                activeMode = 'gamepad';
+                updatePageStatus("", pageId);
+            } else if (pageId === 'page-pins') {
+                activeMode = 'pinControl';
+                updatePageStatus("", pageId);
+            } else if (pageId === 'page-pin-status') {
+                activeMode = 'pinStatus';
+                updatePageStatus("", pageId);
+                // Send command to Micro:bit to start sending status data
+                console.log("Entering Pin Status page. Sending 'send_pin_data_enabled=True'");
+                publishCommand('commands', 'send_pin_data_enabled=True');
+            } else {
+                activeMode = 'none';
+                updatePageStatus("", pageId);
+            }
+                
+            console.log(`Switched to page: ${pageId}. Active mode: ${activeMode}`);
+        }
+                
+        function updateConnectionStatus(message, color) {
+            const connectionTextElement = document.getElementById('connection-status-text');
+            const circleElement = document.getElementById('connection-status-circle');
+            if (connectionTextElement) {
+                connectionTextElement.textContent = message;
+            }
+            if (circleElement) {
+                circleElement.classList.remove('bg-red-500', 'bg-green-500');
+                if (color === 'green') {
+                    circleElement.classList.add('bg-green-500');
+                } else {
+                    circleElement.classList.add('bg-red-500');
+                }
+            }
+        }
+
+
+        function updatePageStatus(message, pageId) {
+            let statusElement;
+            if (pageId === 'page-connect') {
+                statusElement = document.getElementById('page-status-connect');
+            } else if (pageId === 'page-gamepad') {
+                statusElement = document.getElementById('page-status-gamepad');
+            } else if (pageId === 'page-pins') {
+                statusElement = document.getElementById('page-status-pins');
+            } else if (pageId === 'page-pin-status') {
+                statusElement = document.getElementById('page-status-pin-status');
+            }
+                
+            if (statusElement) {
+                statusElement.textContent = message;
+            }
         }
 
         function connectMQTT() {
-            const statusElement = document.getElementById('status');
-            if (statusElement) {
-                statusElement.textContent = "สถานะ: กำลังเชื่อมต่อ...";
-                statusElement.style.color = "black";
-            }
+            updateConnectionStatus("สถานะ: กำลังเชื่อมต่อ...", "red");
             const clientId = "web-" + Math.random().toString(16).substr(2, 8);
             client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", clientId);
 
@@ -559,66 +686,129 @@
                     onFailure: onFail
                 });
             } catch (e) {
-                if (statusElement) {
-                    statusElement.textContent = `Error: ${e.message}`;
-                    statusElement.style.color = "red";
-                }
+                updateConnectionStatus(`Error: ${e.message}`, "red");
                 console.error("MQTT connection failed:", e);
             }
         }
 
         function onConnect() {
-            const statusElement = document.getElementById('status');
             console.log("Connected to MQTT Broker.");
-            if (statusElement) {
-                statusElement.textContent = "สถานะ: เชื่อมต่อแล้ว";
-                statusElement.style.color = "green";
-            }
-            // Subscribe to the status topic
+            isConnected = true;
+            updateConnectionStatus("สถานะ: เชื่อมต่อแล้ว", "green");
+            showModal("เชื่อมต่อสำเร็จ!", "ตอนนี้คุณสามารถควบคุม Micro:bit ของคุณได้แล้ว");
+                
+            // Subscribe to the status topic for real-time updates
             const statusTopic = `${uniqueId}/status`;
             client.subscribe(statusTopic);
             console.log(`Subscribed to topic: ${statusTopic}`);
+                
+            // Subscribe to the pin control topic to receive confirmation or status changes
+            const pinControlTopic = `${uniqueId}/pincontrol`;
+            client.subscribe(pinControlTopic);
+            console.log(`Subscribed to topic: ${pinControlTopic}`);
         }
 
         function onFail(responseObject) {
-            const statusElement = document.getElementById('status');
             console.log("Connection failed: " + responseObject.errorMessage);
-            if (statusElement) {
-                    statusElement.textContent = `สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`;
-                statusElement.style.color = "red";
-            }
+            isConnected = false;
+            updateConnectionStatus(`สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`, "red");
+            showModal("การเชื่อมต่อล้มเหลว", `โปรดตรวจสอบ ID และลองใหม่อีกครั้ง. Error: ${responseObject.errorMessage}`);
         }
 
+        // --- Complete the onConnectionLost function ---
         function onConnectionLost(responseObject) {
-            const statusElement = document.getElementById('status');
             if (responseObject.errorCode !== 0) {
                 console.log("Connection lost: " + responseObject.errorMessage);
-                if (statusElement) {
-                    statusElement.textContent = `สถานะ: การเชื่อมต่อหลุด (${responseObject.errorMessage})`;
-                    statusElement.style.color = "red";
-                }
+                isConnected = false;
+                updateConnectionStatus("สถานะ: ไม่ได้เชื่อมต่อ", "red");
+                showModal("การเชื่อมต่อขาดหาย", `การเชื่อมต่อกับ Broker ขาดหาย Error: ${responseObject.errorMessage}`);
             }
         }
-        
+                
+        // --- Complete the onMessageArrived function ---
         function onMessageArrived(message) {
-            console.log("Message arrived on topic " + message.destinationName + ": " + message.payloadString);
-            const topicParts = message.destinationName.split('/');
-            const type = topicParts[topicParts.length - 1];
-
-            if (type === 'status') {
+            console.log(`Message arrived from topic: ${message.destinationName}`);
+                
+            // Check if the message is from the status topic for the active ID
+            const statusTopic = `${uniqueId}/status`;
+            if (message.destinationName === statusTopic) {
                 try {
-                    const data = JSON.parse(message.payloadString);
-                    updatePinStatus(data);
+                    const pinData = JSON.parse(message.payloadString);
+                    console.log("Received pin data:", pinData);
+
+                    // Update the UI for each pin in the received data
+                    // โดยวนลูปจาก statusPins ที่คุณกำหนดไว้
+                    statusPins.forEach(pin => {
+                        const pinId = pin.id;
+                        if (pinData.hasOwnProperty(pinId)) {
+                            const value = pinData[pinId];
+                            updatePinStatusCard(pinId, value);
+                        }
+                    });
                 } catch (e) {
-                    console.error("Failed to parse status message:", e);
+                    console.error("Failed to parse pin status message:", e);
                 }
+            } else if (message.destinationName === `${uniqueId}/pincontrol`) {
+                // Handle a response from the pin control commands if necessary
+                console.log("Received pin control response:", message.payloadString);
             }
         }
 
+
+        window.publishCommand = function(topicSuffix, payload, addClass) {
+            if (!isConnected) {
+                showModal("ไม่ได้เชื่อมต่อ", "โปรดเชื่อมต่อกับ Broker ก่อน");
+                return;
+            }
+            if (!client) {
+                console.error("MQTT client is not initialized.");
+                return;
+            }
+
+            const topic = `${uniqueId}/${topicSuffix}`;
+            const message = new Paho.MQTT.Message(payload);
+            message.destinationName = topic;
+                
+            try {
+                client.send(message);
+                console.log(`Published to ${topic}: ${payload}`);
+                          
+                // Add/remove active class for button visual feedback
+                const buttonId = `btn-${payload.split('_')[0].toLowerCase()}`;
+                const buttonElement = document.getElementById(buttonId);
+                if (buttonElement) {
+                    if (addClass) {
+                        buttonElement.classList.add('active');
+                    } else {
+                        buttonElement.classList.remove('active');
+                    }
+                } else {
+                    const dpadButtons = {
+                        'UP_PRESSED': 'dpad-up', 'UP_RELEASED': 'dpad-up',
+                        'DOWN_PRESSED': 'dpad-down', 'DOWN_RELEASED': 'dpad-down',
+                        'LEFT_PRESSED': 'dpad-left', 'LEFT_RELEASED': 'dpad-left',
+                        'RIGHT_PRESSED': 'dpad-right', 'RIGHT_RELEASED': 'dpad-right',
+                    };
+                    const dpadId = dpadButtons[payload];
+                    const dpadElement = document.getElementById(dpadId);
+                    if (dpadElement) {
+                        if (addClass) {
+                            dpadElement.classList.add('active');
+                        } else {
+                            dpadElement.classList.remove('active');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to send message:", e);
+                showModal("ส่งข้อความล้มเหลว", "โปรดลองใหม่อีกครั้ง");
+            }
+        }
+                
+        // --- Pin Control Functionality ---
         window.handleToggleChange = function(pin, isChecked) {
-            const statusElement = document.getElementById('status');
-            const state = isChecked ? 'On' : 'Off';
-            publishCommand('commands', `${pin}_${state}`);
+            const state = isChecked ? '1' : '0';
+            publishCommand('commands', `${pin}=${state}`);
         }
 
         window.publishCommand = function(topicSuffix, payload) {
@@ -636,7 +826,7 @@
             const topic = `${uniqueId}/${topicSuffix}`;
             const message = new Paho.MQTT.Message(payload);
             message.destinationName = topic;
-            
+                
             try {
                 client.send(message);
                 console.log(`Published to ${topic}: ${payload}`);
@@ -648,103 +838,85 @@
                 console.error("Publishing failed:", e);
             }
         }
-        
-        // --- Pin Status Page Logic ---
+
+        // --- Pin Status Functions ---
+                
+            
         function createPinStatusCards() {
-            const pinContainer = document.getElementById('pin-status-container');
-            if (!pinContainer) return;
-
-            // Clear any existing cards
-            pinContainer.innerHTML = '';
-
+            const container = document.getElementById('pin-status-container');
+            if (!container) {
+                console.error("Pin status container not found.");
+                return;
+            }
+            container.innerHTML = ''; // Clear existing content
+                
             statusPins.forEach(pin => {
-                const card = document.createElement('div');
-                card.id = `status-card-${pin.id}`;
-                card.className = `pin-card bg-new-pastel-card shadow-md`;
-                card.innerHTML = `
-                    <div class="font-bold text-xl mb-1 text-new-pastel-text">${pin.name}</div>
-                    <div id="status-value-${pin.id}" class="text-3xl md:text-4xl font-bold text-new-pastel-text">...</div>
-                    <div id="status-type-${pin.id}" class="text-sm font-medium text-gray-500 mt-1">${pin.type === 'digital' ? 'Digital' : 'Analog'}</div>
+                const pinCard = document.createElement('div');
+                pinCard.id = `pin-status-card-${pin.id}`;
+                pinCard.classList.add('pin-card', 'bg-new-pastel-card');
+                    
+                // Initial content for the card
+                pinCard.innerHTML = `
+                    <p class="text-xl font-bold text-new-pastel-text mb-2">${pin.name}</p>
+                    <p class="text-xs font-semibold text-new-pastel-text opacity-70 mb-2">${pin.type.toUpperCase()}</p>
+                    <div class="text-3xl font-bold text-new-pastel-text" id="pin-value-${pin.id}">--</div>
                 `;
-                pinContainer.appendChild(card);
+                    
+                container.appendChild(pinCard);
             });
         }
+                
+        function updatePinStatusCard(pinId, value) {
+            const pinCard = document.getElementById(`pin-status-card-${pinId}`);
+            const valueElement = document.getElementById(`pin-value-${pinId}`);
+            if (pinCard && valueElement) {
+                // Determine the pin type from the global configuration
+                const pinInfo = statusPins.find(p => p.id === pinId);
+                const pinType = pinInfo ? pinInfo.type : 'unknown';
 
-        function updatePinStatus(data) {
-            statusPins.forEach(pin => {
-                const card = document.getElementById(`status-card-${pin.id}`);
-                const valueElement = document.getElementById(`status-value-${pin.id}`);
-                const value = data[pin.id];
-
-                if (valueElement) {
-                    valueElement.textContent = value !== undefined ? value : 'N/A';
-                }
-
-                if (card) {
-                    card.classList.remove('pin-high', 'pin-low', 'pin-analog');
-                    if (pin.type === 'digital') {
-                        if (value === 1) {
-                            card.classList.add('pin-high');
-                        } else if (value === 0) {
-                            card.classList.add('pin-low');
-                        }
+                // Update the visual status based on pin type and value
+                pinCard.classList.remove('high', 'low', 'analog', 'bg-new-pastel-card');
+                    
+                if (pinType === 'digital') {
+                    if (value === 1) {
+                        pinCard.classList.add('high');
+                        valueElement.textContent = "HIGH (1)";
                     } else {
-                        card.classList.add('pin-analog');
+                        pinCard.classList.add('low');
+                        valueElement.textContent = "LOW (0)";
                     }
+                } else if (pinType === 'analog') {
+                    pinCard.classList.add('analog');
+                    valueElement.textContent = value;
+                } else {
+                    // Fallback for unknown pins
+                    pinCard.classList.add('bg-new-pastel-card');
+                    valueElement.textContent = value;
                 }
-            });
+            }
         }
+                
+        // --- Custom Message Modal UI Logic ---
+        const modal = document.getElementById('messageModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
 
-        // --- Event Listener for Keyboard Input ---
-        const keyMap = {
-            'w': 'dpad-up', 'W': 'dpad-up', 'ArrowUp': 'dpad-up',
-            's': 'dpad-down', 'S': 'dpad-down', 'ArrowDown': 'dpad-down',
-            'a': 'dpad-left', 'A': 'dpad-left', 'ArrowLeft': 'dpad-left',
-            'd': 'dpad-right', 'D': 'dpad-right', 'ArrowRight': 'dpad-right',
-            'h': 'btn-h', 'H': 'btn-h',
-            'j': 'btn-j', 'J': 'btn-j',
-            'k': 'btn-k', 'K': 'btn-k',
-            'l': 'btn-l', 'L': 'btn-l'
+        modalCloseBtn.onclick = () => {
+            modal.classList.remove('visible');
         };
 
-        const keyCommandMap = {
-            'w': 'UP', 'W': 'UP', 'ArrowUp': 'UP',
-            's': 'DOWN', 'S': 'DOWN', 'ArrowDown': 'DOWN',
-            'a': 'LEFT', 'A': 'LEFT', 'ArrowLeft': 'LEFT',
-            'd': 'RIGHT', 'D': 'RIGHT', 'ArrowRight': 'RIGHT',
-            'h': 'H', 'H': 'H',
-            'j': 'J', 'J': 'J',
-            'k': 'K', 'K': 'K',
-            'l': 'L', 'L': 'L'
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.classList.remove('visible');
+            }
         };
 
-        document.addEventListener('keydown', (event) => {
-            if (event.repeat) return; // Ignore key repeat
-
-            const buttonId = keyMap[event.key];
-            const command = keyCommandMap[event.key];
-            
-            if (buttonId && command) {
-                const button = document.getElementById(buttonId);
-                if (button) {
-                    button.classList.add('active');
-                }
-                publishCommand('gamepad', `${command}_PRESSED`);
-            }
-        });
-
-        document.addEventListener('keyup', (event) => {
-            const buttonId = keyMap[event.key];
-            const command = keyCommandMap[event.key];
-            
-            if (buttonId && command) {
-                const button = document.getElementById(buttonId);
-                if (button) {
-                    button.classList.remove('active');
-                }
-                publishCommand('gamepad', `${command}_RELEASED`);
-            }
-        });
+        function showModal(title, message) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modal.classList.add('visible');
+        }
     </script>
 </body>
 </html>
