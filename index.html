@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Micro:bit Multi-Page Control</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap">
+    <!-- Use Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -37,6 +41,9 @@
                         'action-yellow': '#ECC278',
                         'action-green': '#62C2BF',
                         'action-blue': '#5C8DCA',
+                        'pin-high': '#d1fae5', // Light green for HIGH status
+                        'pin-low': '#fee2e2', // Light red for LOW status
+                        'pin-analog': '#e0f2fe', // Light blue for Analog status
                     },
                 },
             },
@@ -287,6 +294,24 @@
         input:checked + .slider:before {
             transform: translateX(26px);
         }
+
+        /* Styles for Pin Status Page */
+        .pin-card {
+            transition: all 0.3s ease-in-out;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .pin-card.high {
+            background-color: #d1fae5; /* Green */
+        }
+        .pin-card.low {
+            background-color: #fee2e2; /* Red */
+        }
+        .pin-card.analog {
+            background-color: #e0f2fe; /* Blue */
+        }
     </style>
 </head>
 <body class="bg-ui-bg min-h-screen">
@@ -301,6 +326,7 @@
         <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-connect')">Connect</a>
         <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-gamepad')">Gamepad</a>
         <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-pins')">Pin Control</a>
+        <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-pin-status')">Pin Status</a>
     </div>
 
     <div class="container-wrapper">
@@ -310,7 +336,7 @@
             <section id="page-connect" class="space-y-4">
                 <h2 class="text-xl font-semibold text-center text-new-pastel-text">เชื่อมต่อกับ Micro:bit</h2>
                 <div class="p-4 bg-new-pastel-card rounded-lg shadow-sm">
-                    <label for="uniqueId" class="block text-sm font-medium text-new-pastel-text">ID เฉพาะ (ต้องตรงกับ Micro:bit)</label>
+                    <label for="uniqueId" class="block text-sm font-medium text-new-pastel-text">ตั้งค่า ID ให้ตรงกับ Microbit</label>
                     <input type="text" id="uniqueId" value="11222222" placeholder="ใส่ ID เฉพาะที่นี่"
                         class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-sm focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
                 </div>
@@ -414,6 +440,18 @@
                     </div>
                 </div>
             </section>
+            
+            <!-- NEW SECTION FOR PIN STATUS -->
+            <section id="page-pin-status" class="hidden-page">
+                <h2 class="text-xl font-semibold text-center text-new-pastel-text mb-4">สถานะ Pin ของ Micro:bit</h2>
+                <p class="text-gray-500 mb-6 text-center">
+                    
+                </p>
+                <div id="pin-status-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    <!-- Pin cards will be inserted here by JavaScript -->
+                </div>
+            </section>
+
         </div>
     </div>
 
@@ -424,6 +462,21 @@
         let client;
         let uniqueId;
         
+        // --- Define the pins you want to display for status ---
+        const statusPins = [
+            { id: 'P0', name: 'Pin 0', type: 'analog' },
+            { id: 'P1', name: 'Pin 1', type: 'analog' },
+            { id: 'P2', name: 'Pin 2', type: 'analog' },
+            { id: 'P5', name: 'Pin 5', type: 'digital' },
+            { id: 'P8', name: 'Pin 8', type: 'digital' },
+            { id: 'P11', name: 'Pin 11', type: 'digital' },
+            { id: 'P12', name: 'Pin 12', type: 'digital' },
+            { id: 'P13', name: 'Pin 13', type: 'digital' },
+            { id: 'P14', name: 'Pin 14', type: 'digital' },
+            { id: 'P15', name: 'Pin 15', type: 'digital' },
+            { id: 'P16', name: 'Pin 16', type: 'digital' }
+        ];
+
         // --- Event Listener for Page Load ---
         window.onload = function() {
             if (typeof Paho === 'undefined' || !Paho.MQTT || !Paho.MQTT.Client) {
@@ -437,6 +490,7 @@
             }
             initializeMQTT();
             showPage(null, 'page-connect');
+            createPinStatusCards();
         };
 
         // --- Main MQTT Initialization Function ---
@@ -520,13 +574,17 @@
                 statusElement.textContent = "สถานะ: เชื่อมต่อแล้ว";
                 statusElement.style.color = "green";
             }
+            // Subscribe to the status topic
+            const statusTopic = `${uniqueId}/status`;
+            client.subscribe(statusTopic);
+            console.log(`Subscribed to topic: ${statusTopic}`);
         }
 
         function onFail(responseObject) {
             const statusElement = document.getElementById('status');
             console.log("Connection failed: " + responseObject.errorMessage);
             if (statusElement) {
-                statusElement.textContent = `สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`;
+                    statusElement.textContent = `สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`;
                 statusElement.style.color = "red";
             }
         }
@@ -544,6 +602,17 @@
         
         function onMessageArrived(message) {
             console.log("Message arrived on topic " + message.destinationName + ": " + message.payloadString);
+            const topicParts = message.destinationName.split('/');
+            const type = topicParts[topicParts.length - 1];
+
+            if (type === 'status') {
+                try {
+                    const data = JSON.parse(message.payloadString);
+                    updatePinStatus(data);
+                } catch (e) {
+                    console.error("Failed to parse status message:", e);
+                }
+            }
         }
 
         window.handleToggleChange = function(pin, isChecked) {
@@ -580,7 +649,53 @@
             }
         }
         
-        // --- Event Listener for Keyboard Input (โค้ดที่แก้ไขแล้ว) ---
+        // --- Pin Status Page Logic ---
+        function createPinStatusCards() {
+            const pinContainer = document.getElementById('pin-status-container');
+            if (!pinContainer) return;
+
+            // Clear any existing cards
+            pinContainer.innerHTML = '';
+
+            statusPins.forEach(pin => {
+                const card = document.createElement('div');
+                card.id = `status-card-${pin.id}`;
+                card.className = `pin-card bg-new-pastel-card shadow-md`;
+                card.innerHTML = `
+                    <div class="font-bold text-xl mb-1 text-new-pastel-text">${pin.name}</div>
+                    <div id="status-value-${pin.id}" class="text-3xl md:text-4xl font-bold text-new-pastel-text">...</div>
+                    <div id="status-type-${pin.id}" class="text-sm font-medium text-gray-500 mt-1">${pin.type === 'digital' ? 'Digital' : 'Analog'}</div>
+                `;
+                pinContainer.appendChild(card);
+            });
+        }
+
+        function updatePinStatus(data) {
+            statusPins.forEach(pin => {
+                const card = document.getElementById(`status-card-${pin.id}`);
+                const valueElement = document.getElementById(`status-value-${pin.id}`);
+                const value = data[pin.id];
+
+                if (valueElement) {
+                    valueElement.textContent = value !== undefined ? value : 'N/A';
+                }
+
+                if (card) {
+                    card.classList.remove('pin-high', 'pin-low', 'pin-analog');
+                    if (pin.type === 'digital') {
+                        if (value === 1) {
+                            card.classList.add('pin-high');
+                        } else if (value === 0) {
+                            card.classList.add('pin-low');
+                        }
+                    } else {
+                        card.classList.add('pin-analog');
+                    }
+                }
+            });
+        }
+
+        // --- Event Listener for Keyboard Input ---
         const keyMap = {
             'w': 'dpad-up', 'W': 'dpad-up', 'ArrowUp': 'dpad-up',
             's': 'dpad-down', 'S': 'dpad-down', 'ArrowDown': 'dpad-down',
