@@ -32,10 +32,11 @@
                         'action-yellow': '#ECC278',
                         'action-green': '#62C2BF',
                         'action-blue': '#5C8DCA',
-                        'pin-high': '#d1fae5', //
-                        'pin-low': '#fee2e2', //
-                        'pin-analog': '#e0f2fe',
-                        'pin-default': '#E8E2E6',
+                        // เพิ่มสีใหม่สำหรับ Pin Control
+                                                'pin-high': '#d1fae5',
+                                                'pin-low': '#fee2e2',
+                                                'pin-analog': '#e0f2fe',
+                                                'pin-default': '#E8E2E6',
                     },
                 },
             },
@@ -166,6 +167,47 @@
             overflow: hidden;
             z-index: 1;
         }
+        
+        /* Styles for Pin Control Page */
+                .pin-control-card {
+                    transition: all 0.3s ease-in-out;
+                    border-radius: 1rem;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    padding: 1.5rem;
+                    background-color: #E8E2E6; /* Default card color */
+                }
+                
+                /* Styles for the pin status circle on the Pin Control page */
+                .pin-status-circle {
+                    transition: background-color 0.3s ease-in-out;
+                    border-radius: 9999px;
+                    width: 1rem;
+                    height: 1rem;
+                }
+
+                .pin-status-circle.high {
+                    background-color: #34d399; /* A vivid green for HIGH status */
+                }
+
+                .pin-status-circle.low {
+                    background-color: #ef4444; /* A vivid red for LOW status */
+                }
+                
+                /* NEW: Styles for pin control buttons */
+                .control-btn {
+                    padding: 0.5rem 1rem;
+                    border-radius: 9999px;
+                    font-weight: 600;
+                    color: white;
+                    transition: all 0.2s;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+                .control-btn:active {
+                    transform: scale(0.95);
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+                }
+                .btn-green { background-color: #62C2BF; }
+                .btn-red { background-color: #E97262; }
         .control-button:active, .control-button.active {
             transform: scale(0.95);
             box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 0 10px 2px var(--button-color);
@@ -353,6 +395,20 @@
         .modal.visible .modal-content {
             transform: translateY(0);
         }
+        
+        
+        /* NEW: Styles for the pin status circle on the Pin Control page */
+                .pin-status-circle {
+                    transition: background-color 0.3s ease-in-out;
+                }
+
+                .pin-status-circle.low {
+                    background-color: #f87171; /* A light red for LOW status */
+                }
+                .pin-status-circle.high {
+                    background-color: #34d399; /* A light green for HIGH status */
+                }
+        
     </style>
 </head>
 <body class="bg-ui-bg min-h-screen">
@@ -426,6 +482,7 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="pin-control-container">
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 0</span>
+                        <div id="status-P0" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-P0" class="pin-control-toggle" onchange="handleToggleChange('P0', this.checked)">
                             <span class="slider"></span>
@@ -433,6 +490,7 @@
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 1</span>
+                        <div id="status-P1" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-P1" class="pin-control-toggle" onchange="handleToggleChange('P1', this.checked)">
                             <span class="slider"></span>
@@ -440,6 +498,7 @@
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 2</span>
+                        <div id="status-P2" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-P2" class="pin-control-toggle" onchange="handleToggleChange('P2', this.checked)">
                             <span class="slider"></span>
@@ -447,6 +506,7 @@
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 8</span>
+                        <div id="status-P8" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-P8" class="pin-control-toggle" onchange="handleToggleChange('P8', this.checked)">
                             <span class="slider"></span>
@@ -454,6 +514,7 @@
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 12</span>
+                        <div id="status-P12" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-P12" class="pin-control-toggle" onchange="handleToggleChange('P12', this.checked)">
                             <span class="slider"></span>
@@ -461,6 +522,7 @@
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 13</span>
+                        <div id="status-P13" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-P13" class="pin-control-toggle" onchange="handleToggleChange('P13', this.checked)">
                             <span class="slider"></span>
@@ -468,6 +530,7 @@
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 14</span>
+                        <div id="status-P14" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-P14" class="pin-control-toggle" onchange="handleToggleChange('P14', this.checked)">
                             <span class="slider"></span>
@@ -475,6 +538,7 @@
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 15</span>
+                        <div id="status-P15" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-P15" class="pin-control-toggle" onchange="handleToggleChange('P15', this.checked)">
                             <span class="slider"></span>
@@ -482,6 +546,7 @@
                     </div>
                     <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
                         <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 16</span>
+                        <div id="status-P16" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
                         <label class="toggle-switch">
                             <input type="checkbox" id="toggle-P16" class="pin-control-toggle" onchange="handleToggleChange('P16', this.checked)">
                             <span class="slider"></span>
@@ -493,13 +558,20 @@
             
             <section id="page-pin-status" class="hidden-page">
                 <h2 class="text-xl font-semibold text-center text-new-pastel-text mb-4">สถานะ Pin ของ Micro:bit</h2>
-                <p class="text-gray-500 mb-6 text-center text-sm">
-                    อัปเดตสถานะ Pin แบบเรียลไทม์จาก Micro:bit
-                </p>
+              
+                <div class="mt-8 text-center">
+                    <button id="requestPinStatusBtn"
+                        class="bg-new-pastel-accent-2 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+                        ขอข้อมูลสถานะ Pin
+                    </button>
+                </div>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pin-status"></div>
                 <div id="pin-status-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     </div>
                 <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pin-status"></div>
+                
             </section>
+            
 
         </div>
     </div>
@@ -515,384 +587,510 @@
     </div>
 
     <script>
-        let activeMode = 'none';
-        let isConnected = false;
+            let activeMode = 'none';
+            let isConnected = false;
 
-        // --- MQTT Broker & Client Configuration ---
-        const HOST = 'broker.hivemq.com';
-        const PORT = 8884; // Secure WebSocket Port
-        let client;
-        let uniqueId;
-              
-        // --- Define the pins you want to display for status ---
-        const statusPins = [
-            { id: 'P0', name: 'Pin 0', type: 'analog' },
-            { id: 'P1', name: 'Pin 1', type: 'analog' },
-            { id: 'P2', name: 'Pin 2', type: 'analog' },
-            { id: 'P5', name: 'Pin 5', type: 'digital' },
-            { id: 'P8', name: 'Pin 8', type: 'digital' },
-            { id: 'P9', name: 'Pin 9', type: 'digital' },
-            { id: 'P11', name: 'Pin 11', type: 'digital' },
-            { id: 'P12', name: 'Pin 12', type: 'digital' },
-            { id: 'P13', name: 'Pin 13', type: 'digital' },
-            { id: 'P14', name: 'Pin 14', type: 'digital' },
-            { id: 'P15', name: 'Pin 15', type: 'digital' },
-            { id: 'P16', name: 'Pin 16', type: 'digital' }
-        ];
+            // --- MQTT Broker & Client Configuration ---
+            const HOST = 'broker.hivemq.com';
+            const PORT = 8884; // Secure WebSocket Port
+            let client;
+            let uniqueId;
+            
+            // --- Define the pins you want to display for status ---
+            const statusPins = [
+                { id: 'P0', name: 'Pin 0', type: 'analog' },
+                { id: 'P1', name: 'Pin 1', type: 'analog' },
+                { id: 'P2', name: 'Pin 2', type: 'analog' },
+                { id: 'P5', name: 'Pin 5', type: 'digital' },
+                { id: 'P8', name: 'Pin 8', type: 'digital' },
+                { id: 'P9', name: 'Pin 9', type: 'digital' },
+                { id: 'P11', name: 'Pin 11', type: 'digital' },
+                { id: 'P12', name: 'Pin 12', type: 'digital' },
+                { id: 'P13', name: 'Pin 13', type: 'digital' },
+                { id: 'P14', name: 'Pin 14', type: 'digital' },
+                { id: 'P15', name: 'Pin 15', type: 'digital' },
+                { id: 'P16', name: 'Pin 16', type: 'digital' }
+            ];
+            
+            // เพิ่มฟังก์ชันนี้เพื่อจัดการการแสดงผลสถานะวงกลมสีบนหน้า Pin Control
+            // Function to update the pin status circle and card on the Pin Control page
+            function updatePinControlStatus(pinId, value) {
+                // Select the circle element based on the pin ID from the HTML
+                const statusCircle = document.getElementById(`status-${pinId}`);
 
-        // --- Event Listener for Page Load ---
-        window.onload = function() {
-            if (typeof Paho === 'undefined' || !Paho.MQTT || !Paho.MQTT.Client) {
-                const connectionTextElement = document.getElementById('connection-status-text');
-                if (connectionTextElement) {
-                    connectionTextElement.textContent = "Error: Paho script not loaded.";
-                    connectionTextElement.style.color = "red";
-                }
-                console.error("Paho MQTT client is not loaded. Check the script link or internet connection.");
-                return;
-            }
-            initializeMQTT();
-            // Start on the Connect page
-            showPage(null, 'page-connect');
-            createPinStatusCards();
-        };
-
-        // --- Main MQTT Initialization Function ---
-        function initializeMQTT() {
-            const connectBtn = document.getElementById('connectBtn');
-            if (connectBtn) {
-                connectBtn.addEventListener('click', () => {
-                    uniqueId = document.getElementById('uniqueId').value.trim();
-                    if (!uniqueId) {
-                        updateConnectionStatus("Error: โปรดใส่ ID เฉพาะ", "red");
-                        showModal("ID ไม่ถูกต้อง", "โปรดใส่ ID ที่ตรงกับ Micro:bit ของคุณ");
-                        return;
+                // Check if the circle element exists before proceeding
+                if (statusCircle) {
+                    // Remove existing state classes to reset the appearance
+                    statusCircle.classList.remove('low', 'high');
+                    
+                    // Check the value received from the device
+                    if (value === 1) {
+                        // Add the 'high' class for a value of 1 (ON), making the circle green
+                        statusCircle.classList.add('high');
+                    } else if (value === 0) {
+                        // Add the 'low' class for a value of 0 (OFF), making the circle red
+                        statusCircle.classList.add('low');
                     }
-                    connectMQTT();
-                });
-            } else {
-                console.error("Connect button not found.");
-            }
-        }
-                
-        // Toggles the visibility of the sidebar menu
-        window.toggleSidebar = function() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('open');
-        }
-
-        // Handles showing a specific page and triggering page-specific actions
-        window.showPage = function(event, pageId) {
-            if (event) {
-                event.preventDefault();
-            }
-            const pages = document.querySelectorAll('section[id^="page-"]');
-            pages.forEach(page => {
-                page.classList.add('hidden-page');
-            });
-            const selectedPage = document.getElementById(pageId);
-            if (selectedPage) {
-                selectedPage.classList.remove('hidden-page');
-            } else {
-                console.error(`Page with ID ${pageId} not found.`);
-            }
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar) {
-                sidebar.classList.remove('open');
-            }
-
-            // Trigger action based on the selected page
-            handlePageChange(pageId);
-        }
-
-                
-        function handlePageChange(pageId) {
-            // Check if we are leaving the Pin Status page.
-            // If the active mode was 'pinStatus' and the new page is not 'page-pin-status',
-            // send the command to stop the data stream.
-            if (activeMode === 'pinStatus' && pageId !== 'page-pin-status') {
-                console.log("Leaving Pin Status page. Sending 'send_pin_data_enabled=False'");
-                publishCommand('commands', 'send_pin_data_enabled=False');
-            }
-                
-            // Now, set the new active mode and send necessary commands
-            if (pageId === 'page-gamepad') {
-                activeMode = 'gamepad';
-                updatePageStatus("", pageId);
-            } else if (pageId === 'page-pins') {
-                activeMode = 'pinControl';
-                updatePageStatus("", pageId);
-            } else if (pageId === 'page-pin-status') {
-                activeMode = 'pinStatus';
-                updatePageStatus("", pageId);
-                // Send command to Micro:bit to start sending status data
-                console.log("Entering Pin Status page. Sending 'send_pin_data_enabled=True'");
-                publishCommand('commands', 'send_pin_data_enabled=True');
-            } else {
-                activeMode = 'none';
-                updatePageStatus("", pageId);
-            }
-                
-            console.log(`Switched to page: ${pageId}. Active mode: ${activeMode}`);
-        }
-                
-        function updateConnectionStatus(message, color) {
-            const connectionTextElement = document.getElementById('connection-status-text');
-            const circleElement = document.getElementById('connection-status-circle');
-            if (connectionTextElement) {
-                connectionTextElement.textContent = message;
-            }
-            if (circleElement) {
-                circleElement.classList.remove('bg-red-500', 'bg-green-500');
-                if (color === 'green') {
-                    circleElement.classList.add('bg-green-500');
-                } else {
-                    circleElement.classList.add('bg-red-500');
                 }
             }
-        }
-
-
-        function updatePageStatus(message, pageId) {
-            let statusElement;
-            if (pageId === 'page-connect') {
-                statusElement = document.getElementById('page-status');
-            } else if (pageId === 'page-gamepad') {
-                statusElement = document.getElementById('page-status-gamepad');
-            } else if (pageId === 'page-pins') {
-                statusElement = document.getElementById('page-status-pins');
-            } else if (pageId === 'page-pin-status') {
-                statusElement = document.getElementById('page-status-pin-status');
+            
+            // เพิ่มฟังก์ชันนี้ลงใน <script> block
+            window.requestPinStatus = function() {
+                if (!isConnected) {
+                    showModal("ไม่ได้เชื่อมต่อ", "โปรดเชื่อมต่อกับ Broker ก่อน");
+                    return;
+                }
+                // Publish a command to request all pin status data
+                publishCommand('commands', 'request_pin_status');
+                updatePageStatus("กำลังร้องขอข้อมูล...", "page-pin-status");
             }
-                
-            if (statusElement) {
-                statusElement.textContent = message;
-            }
-        }
 
-        function connectMQTT() {
-            updateConnectionStatus("สถานะ: กำลังเชื่อมต่อ...", "red");
-            const clientId = "web-" + Math.random().toString(16).substr(2, 8);
-            client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", clientId);
+            // เพิ่ม Event Listener เพื่อผูกฟังก์ชันกับปุ่ม
+            document.addEventListener('DOMContentLoaded', () => {
+                const requestBtn = document.getElementById('requestPinStatusBtn');
+                if (requestBtn) {
+                    requestBtn.addEventListener('click', requestPinStatus);
+                }
+            });
+            
+            // --- Event Listener for Page Load ---
+            window.onload = function() {
+                if (typeof Paho === 'undefined' || !Paho.MQTT || !Paho.MQTT.Client) {
+                    const connectionTextElement = document.getElementById('connection-status-text');
+                    if (connectionTextElement) {
+                        connectionTextElement.textContent = "Error: Paho script not loaded.";
+                        connectionTextElement.style.color = "red";
+                    }
+                    console.error("Paho MQTT client is not loaded. Check the script link or internet connection.");
+                    return;
+                }
+                initializeMQTT();
+                // Start on the Connect page
+                showPage(null, 'page-connect');
+                createPinStatusCards();
+            };
 
-            client.onConnectionLost = onConnectionLost;
-            client.onMessageArrived = onMessageArrived;
-
-            try {
-                client.connect({
-                    onSuccess: onConnect,
-                    useSSL: true,
-                    timeout: 5,
-                    onFailure: onFail
-                });
-            } catch (e) {
-                updateConnectionStatus(`Error: ${e.message}`, "red");
-                console.error("MQTT connection failed:", e);
-            }
-        }
-
-        function onConnect() {
-            console.log("Connected to MQTT Broker.");
-            isConnected = true;
-            updateConnectionStatus("สถานะ: เชื่อมต่อแล้ว", "green");
-            showModal("เชื่อมต่อสำเร็จ!", "ตอนนี้คุณสามารถควบคุม Micro:bit ของคุณได้แล้ว");
-                
-            // Subscribe to the status topic for real-time updates
-            const statusTopic = `${uniqueId}/status`;
-            client.subscribe(statusTopic);
-            console.log(`Subscribed to topic: ${statusTopic}`);
-                
-            // Subscribe to the pin control topic to receive confirmation or status changes
-            const pinControlTopic = `${uniqueId}/pincontrol`;
-            client.subscribe(pinControlTopic);
-            console.log(`Subscribed to topic: ${pinControlTopic}`);
-        }
-
-        function onFail(responseObject) {
-            console.log("Connection failed: " + responseObject.errorMessage);
-            isConnected = false;
-            updateConnectionStatus(`สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`, "red");
-            showModal("การเชื่อมต่อล้มเหลว", `โปรดตรวจสอบ ID และลองใหม่อีกครั้ง. Error: ${responseObject.errorMessage}`);
-        }
-
-        // --- Complete the onConnectionLost function ---
-        function onConnectionLost(responseObject) {
-            if (responseObject.errorCode !== 0) {
-                console.log("Connection lost: " + responseObject.errorMessage);
-                isConnected = false;
-                updateConnectionStatus("สถานะ: ไม่ได้เชื่อมต่อ", "red");
-                showModal("การเชื่อมต่อขาดหาย", `การเชื่อมต่อกับ Broker ขาดหาย Error: ${responseObject.errorMessage}`);
-            }
-        }
-                
-        // --- Complete the onMessageArrived function ---
-        function onMessageArrived(message) {
-            console.log(`Message arrived from topic: ${message.destinationName}`);
-                
-            // Check if the message is from the status topic for the active ID
-            const statusTopic = `${uniqueId}/status`;
-            if (message.destinationName === statusTopic) {
-                try {
-                    // Correctly access the nested 'pins' object
-                    const receivedData = JSON.parse(message.payloadString);
-                    const pinsData = receivedData.pins;
-                    console.log("Received pin data:", pinsData);
-
-                    // Update the UI for each pin in the received data
-                    // โดยวนลูปจาก statusPins ที่คุณกำหนดไว้
-                    statusPins.forEach(pin => {
-                        const pinId = pin.id;
-                        // Check if the received data has a property for this pin
-                        if (pinsData.hasOwnProperty(pinId)) {
-                            const value = pinsData[pinId];
-                            updatePinStatusCard(pinId, value);
+            // --- Main MQTT Initialization Function ---
+            function initializeMQTT() {
+                const connectBtn = document.getElementById('connectBtn');
+                if (connectBtn) {
+                    connectBtn.addEventListener('click', () => {
+                        uniqueId = document.getElementById('uniqueId').value.trim();
+                        if (!uniqueId) {
+                            updateConnectionStatus("Error: โปรดใส่ ID เฉพาะ", "red");
+                            showModal("ID ไม่ถูกต้อง", "โปรดใส่ ID ที่ตรงกับ Micro:bit ของคุณ");
+                            return;
                         }
+                        connectMQTT();
+                    });
+                } else {
+                    console.error("Connect button not found.");
+                }
+            }
+                    
+            // Toggles the visibility of the sidebar menu
+            window.toggleSidebar = function() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('open');
+            }
+
+            window.showPage = function(event, pageId) {
+                if (event) {
+                    event.preventDefault();
+                }
+                const pages = document.querySelectorAll('section[id^="page-"]');
+                pages.forEach(page => {
+                    page.classList.add('hidden-page');
+                });
+                const selectedPage = document.getElementById(pageId);
+                if (selectedPage) {
+                    selectedPage.classList.remove('hidden-page');
+                } else {
+                    console.error(`Page with ID ${pageId} not found.`);
+                }
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.remove('open');
+                }
+
+                // Trigger action based on the selected page
+                handlePageChange(pageId);
+            }
+
+                    
+                    function handlePageChange(pageId) {
+                        let modeValue;
+                        // Set a numeric value for each page
+                        if (pageId === 'page-gamepad') {
+                            modeValue = 2; // Gamepad mode
+                        } else if (pageId === 'page-pins') {
+                            modeValue = 3; // Pin Control mode
+                        }  else if (pageId === 'page-pin-status') {
+                            modeValue = 4;
+                            // ส่งคำสั่งขอข้อมูลสถานะ Pin ทันทีเมื่อเข้าหน้านี้
+                            if (isConnected) {
+                                publishCommand('commands', 'request_pin_status');
+                            }
+                        } else {
+                            modeValue = 1; // Default/Connect page
+                        }
+
+                        // Publish the mode command
+                        publishCommand('commands', `mode=${modeValue}`);
+                        
+                        // Update the local active mode based on the selected page
+                        if (pageId === 'page-gamepad') {
+                            activeMode = 'gamepad';
+                            updatePageStatus("", pageId);
+                        } else if (pageId === 'page-pins') {
+                            activeMode = 'pinControl';
+                            updatePageStatus("", pageId);
+                        } else if (pageId === 'page-pin-status') {
+                            activeMode = 'pinStatus';
+                            updatePageStatus("", pageId);
+                            // No need to send 'send_pin_data_enabled=True' anymore, as the mode will handle it.
+                        } else {
+                            activeMode = 'none';
+                            updatePageStatus("", pageId);
+                        }
+                        console.log(`Switched to page: ${pageId}. Active mode: ${activeMode}, sending mode value: ${modeValue}`);
+                    }
+                    
+            function updateConnectionStatus(message, color) {
+                const connectionTextElement = document.getElementById('connection-status-text');
+                const circleElement = document.getElementById('connection-status-circle');
+                if (connectionTextElement) {
+                    connectionTextElement.textContent = message;
+                }
+                if (circleElement) {
+                    circleElement.classList.remove('bg-red-500', 'bg-green-500');
+                    if (color === 'green') {
+                        circleElement.classList.add('bg-green-500');
+                    } else {
+                        circleElement.classList.add('bg-red-500');
+                    }
+                }
+            }
+
+
+            function updatePageStatus(message, pageId) {
+                let statusElement;
+                if (pageId === 'page-connect') {
+                    statusElement = document.getElementById('page-status');
+                } else if (pageId === 'page-gamepad') {
+                    statusElement = document.getElementById('page-status-gamepad');
+                } else if (pageId === 'page-pins') {
+                    statusElement = document.getElementById('page-status-pins');
+                } else if (pageId === 'page-pin-status') {
+                    statusElement = document.getElementById('page-status-pin-status');
+                }
+                    
+                if (statusElement) {
+                    statusElement.textContent = message;
+                }
+            }
+
+            function connectMQTT() {
+                updateConnectionStatus("สถานะ: กำลังเชื่อมต่อ...", "red");
+                const clientId = "web-" + Math.random().toString(16).substr(2, 8);
+                client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", clientId);
+
+                client.onConnectionLost = onConnectionLost;
+                client.onMessageArrived = onMessageArrived;
+
+                try {
+                    client.connect({
+                        onSuccess: onConnect,
+                        useSSL: true,
+                        timeout: 5,
+                        onFailure: onFail
                     });
                 } catch (e) {
-                    console.error("Failed to parse pin status message:", e);
-                    showModal("ข้อมูลไม่ถูกต้อง", "ไม่สามารถอ่านข้อมูลสถานะ Pin ที่ได้รับมาได้");
+                    updateConnectionStatus(`Error: ${e.message}`, "red");
+                    console.error("MQTT connection failed:", e);
                 }
-            } else if (message.destinationName === `${uniqueId}/pincontrol`) {
-                // Handle a response from the pin control commands if necessary
-                console.log("Received pin control response:", message.payloadString);
-            }
-        }
-
-
-        window.publishCommand = function(topicSuffix, payload, addClass) {
-            if (!isConnected) {
-                showModal("ไม่ได้เชื่อมต่อ", "โปรดเชื่อมต่อกับ Broker ก่อน");
-                return;
-            }
-            if (!client) {
-                console.error("MQTT client is not initialized.");
-                return;
             }
 
-            const topic = `${uniqueId}/${topicSuffix}`;
-            const message = new Paho.MQTT.Message(payload);
-            message.destinationName = topic;
+            function onConnect() {
+                console.log("Connected to MQTT Broker.");
+                isConnected = true;
+                updateConnectionStatus("สถานะ: เชื่อมต่อแล้ว", "green");
+                showModal("เชื่อมต่อสำเร็จ!", "ตอนนี้คุณสามารถควบคุม Micro:bit ของคุณได้แล้ว");
                 
-            try {
-                client.send(message);
-                console.log(`Published to ${topic}: ${payload}`);
-                          
-                // Add/remove active class for button visual feedback
-                const buttonId = `btn-${payload.split('_')[0].toLowerCase()}`;
-                const buttonElement = document.getElementById(buttonId);
-                if (buttonElement) {
-                    if (addClass) {
-                        buttonElement.classList.add('active');
-                    } else {
-                        buttonElement.classList.remove('active');
-                    }
-                } else {
-                    const dpadButtons = {
-                        'UP_PRESSED': 'dpad-up', 'UP_RELEASED': 'dpad-up',
-                        'DOWN_PRESSED': 'dpad-down', 'DOWN_RELEASED': 'dpad-down',
-                        'LEFT_PRESSED': 'dpad-left', 'LEFT_RELEASED': 'dpad-left',
-                        'RIGHT_PRESSED': 'dpad-right', 'RIGHT_RELEASED': 'dpad-right',
-                    };
-                    const dpadId = dpadButtons[payload];
-                    const dpadElement = document.getElementById(dpadId);
-                    if (dpadElement) {
-                        if (addClass) {
-                            dpadElement.classList.add('active');
-                        } else {
-                            dpadElement.classList.remove('active');
+                // Subscribe to the status topic for real-time updates
+                const statusTopic = `${uniqueId}/status`;
+                client.subscribe(statusTopic);
+                console.log(`Subscribed to topic: ${statusTopic}`);
+                
+                // Subscribe to the pin control topic to receive confirmation or status changes
+                const pinControlTopic = `${uniqueId}/pincontrol`;
+                client.subscribe(pinControlTopic);
+                console.log(`Subscribed to topic: ${pinControlTopic}`);
+            }
+
+            function onFail(responseObject) {
+                console.log("Connection failed: " + responseObject.errorMessage);
+                isConnected = false;
+                updateConnectionStatus(`สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`, "red");
+                showModal("การเชื่อมต่อล้มเหลว", `โปรดตรวจสอบ ID และลองใหม่อีกครั้ง. Error: ${responseObject.errorMessage}`);
+            }
+
+            // --- Complete the onConnectionLost function ---
+            function onConnectionLost(responseObject) {
+                if (responseObject.errorCode !== 0) {
+                    console.log("Connection lost: " + responseObject.errorMessage);
+                    isConnected = false;
+                    updateConnectionStatus("สถานะ: ไม่ได้เชื่อมต่อ", "red");
+                    showModal("การเชื่อมต่อขาดหาย", `การเชื่อมต่อกับ Broker ขาดหาย Error: ${responseObject.errorMessage}`);
+                }
+            }
+            
+            // --- Functions to update UI elements based on received data ---
+                    function updatePinControlUI(pinId, value) {
+                        // This function specifically handles updates for the Pin Control page
+                        const pinCircle = document.getElementById(`pin-control-circle-${pinId}`);
+                        if (pinCircle) {
+                            // Remove previous state classes
+                            pinCircle.classList.remove('high', 'low', 'bg-gray-400');
+                            
+                            if (value === 1) {
+                                pinCircle.classList.add('high');
+                            } else if (value === 0) {
+                                pinCircle.classList.add('low');
+                            } else {
+                                // For analog values or unknown states, set to gray
+                                pinCircle.classList.add('bg-gray-400');
+                            }
                         }
                     }
-                }
-            } catch (e) {
-                console.error("Failed to send message:", e);
-                showModal("ส่งข้อความล้มเหลว", "โปรดลองใหม่อีกครั้ง");
-            }
-        }
-                
-        // --- Pin Control Functionality ---
-        window.handleToggleChange = function(pin, isChecked) {
-            const state = isChecked ? '1' : '0';
-            publishCommand('commands', `${pin}=${state}`);
-        }
-
-        // --- Pin Status Functions ---
-                
             
-        function createPinStatusCards() {
-            const container = document.getElementById('pin-status-container');
-            if (!container) {
-                console.error("Pin status container not found.");
-                return;
-            }
-            container.innerHTML = ''; // Clear existing content
-                
-            statusPins.forEach(pin => {
-                const pinCard = document.createElement('div');
-                pinCard.id = `pin-status-card-${pin.id}`;
-                pinCard.classList.add('pin-card', 'bg-new-pastel-card');
-                    
-                // Initial content for the card
-                pinCard.innerHTML = `
-                    <p class="text-xl font-bold text-new-pastel-text mb-2">${pin.name}</p>
-                    <p class="text-xs font-semibold text-new-pastel-text opacity-70 mb-2">${pin.type.toUpperCase()}</p>
-                    <div class="text-3xl font-bold text-new-pastel-text" id="pin-value-${pin.id}">--</div>
-                `;
-                    
-                container.appendChild(pinCard);
-            });
-        }
-                
-        function updatePinStatusCard(pinId, value) {
-            const pinCard = document.getElementById(`pin-status-card-${pinId}`);
-            const valueElement = document.getElementById(`pin-value-${pinId}`);
-            if (pinCard && valueElement) {
-                // Determine the pin type from the global configuration
+            function updatePinStatusUI(pinId, value) {
+                // Find the pin type from the globally defined statusPins array
                 const pinInfo = statusPins.find(p => p.id === pinId);
                 const pinType = pinInfo ? pinInfo.type : 'unknown';
+                
+                // Select elements based on the pin ID
+                const pinCard = document.getElementById(`pin-status-card-${pinId}`);
+                const valueElement = document.getElementById(`pin-value-${pinId}`);
 
-                // Update the visual status based on pin type and value
-                pinCard.classList.remove('high', 'low', 'analog', 'bg-new-pastel-card');
-                    
-                if (pinType === 'digital') {
-                    if (value === 1) {
-                        pinCard.classList.add('high');
-                        valueElement.textContent = "HIGH (1)";
+                if (pinCard && valueElement) {
+                    // Clear existing state classes
+                    pinCard.classList.remove('high', 'low', 'analog', 'bg-new-pastel-card');
+
+                    if (pinType === 'digital') {
+                        if (value === 1) {
+                            pinCard.classList.add('high');
+                            valueElement.textContent = "HIGH (1)";
+                        } else if (value === 0) {
+                            pinCard.classList.add('low');
+                            valueElement.textContent = "LOW (0)";
+                        } else {
+                            // Fallback for non-binary digital values
+                            pinCard.classList.add('bg-new-pastel-card');
+                            valueElement.textContent = value;
+                        }
+                    } else if (pinType === 'analog') {
+                        pinCard.classList.add('analog');
+                        valueElement.textContent = value;
                     } else {
-                        pinCard.classList.add('low');
-                        valueElement.textContent = "LOW (0)";
+                        // Fallback for unknown pins
+                        pinCard.classList.add('bg-new-pastel-card');
+                        valueElement.textContent = value;
                     }
-                } else if (pinType === 'analog') {
-                    pinCard.classList.add('analog');
-                    valueElement.textContent = value;
-                } else {
-                    // Fallback for unknown pins
-                    pinCard.classList.add('bg-new-pastel-card');
-                    valueElement.textContent = value;
                 }
             }
-        }
+                    
+                    // --- MQTT handling logic (updated to call the correct UI functions) ---
+                    function onMessageArrived(message) {
+                        const topic = message.destinationName;
+                        const payload = message.payloadString;
+
+                        console.log(`Received message on topic "${topic}": ${payload}`);
+                        
+                        try {
+                            if (topic.includes('status/pin')) {
+                                // This part is for individual pin updates (e.g., from 'status/pin/P13')
+                                const parts = topic.split('/');
+                                const pinId = parts[parts.length - 1];
+                                const pinValue = JSON.parse(payload);
+                                const pinControlPage = document.getElementById('page-pins');
+                                if (pinControlPage && !pinControlPage.classList.contains('hidden-page')) {
+                                    updatePinControlStatus(pinId.toUpperCase(), pinValue);
+                                }
+                                const pinStatusPage = document.getElementById('page-pin-status');
+                                if (pinStatusPage && !pinStatusPage.classList.contains('hidden-page')) {
+                                    updatePinStatusUI(pinId.toUpperCase(), pinValue);
+                                }
+                            } else if (topic.includes('status')) {
+                                // This part handles the JSON object for multiple pins
+                                const data = JSON.parse(payload);
+                                if (data.pins) {
+                                    // Check if the current page is 'page-pins' and update circles
+                                    const pinControlPage = document.getElementById('page-pins');
+                                    if (pinControlPage && !pinControlPage.classList.contains('hidden-page')) {
+                                        for (const pinId in data.pins) {
+                                            const pinValue = data.pins[pinId];
+                                            updatePinControlStatus(pinId.toUpperCase(), pinValue);
+                                        }
+                                    }
+                                    // Check if the current page is 'page-pin-status' and update cards
+                                    const pinStatusPage = document.getElementById('page-pin-status');
+                                    if (pinStatusPage && !pinStatusPage.classList.contains('hidden-page')) {
+                                        for (const pinId in data.pins) {
+                                            const pinValue = data.pins[pinId];
+                                            updatePinStatusUI(pinId.toUpperCase(), pinValue);
+                                        }
+                                    }
+                                } else if (data.deviceId) {
+                                    // Handle status messages that only contain deviceId
+                                }
+                            } else if (topic.includes('status/message')) {
+                                showModal('Micro:bit Message', payload);
+                            } else {
+                                console.warn(`Unrecognized topic: ${topic}`);
+                            }
+                        } catch (e) {
+                            console.error("Error parsing message payload:", e);
+                            showModal('MQTT Error', 'Failed to parse incoming data.');
+                        }
+                    }
+
+            window.publishCommand = function(topicSuffix, payload, addClass) {
+                if (!isConnected) {
+                    showModal("ไม่ได้เชื่อมต่อ", "โปรดเชื่อมต่อกับ Broker ก่อน");
+                    return;
+                }
+                if (!client) {
+                    console.error("MQTT client is not initialized.");
+                    return;
+                }
+
+                const topic = `${uniqueId}/${topicSuffix}`;
+                const message = new Paho.MQTT.Message(payload);
+                message.destinationName = topic;
                 
-        // --- Custom Message Modal UI Logic ---\
-        const modal = document.getElementById('messageModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
-        const modalCloseBtn = document.getElementById('modalCloseBtn');
-
-        modalCloseBtn.onclick = () => {
-            modal.classList.remove('visible');
-        };
-
-        window.onclick = (event) => {
-            if (event.target == modal) {
-                modal.classList.remove('visible');
+                try {
+                    client.send(message);
+                    console.log(`Published to ${topic}: ${payload}`);
+                                    
+                    // Add/remove active class for button visual feedback
+                    const buttonId = `btn-${payload.split('_')[0].toLowerCase()}`;
+                    const buttonElement = document.getElementById(buttonId);
+                    if (buttonElement) {
+                        if (addClass) {
+                            buttonElement.classList.add('active');
+                        } else {
+                            buttonElement.classList.remove('active');
+                        }
+                    } else {
+                        const dpadButtons = {
+                            'UP_PRESSED': 'dpad-up', 'UP_RELEASED': 'dpad-up',
+                            'DOWN_PRESSED': 'dpad-down', 'DOWN_RELEASED': 'dpad-down',
+                            'LEFT_PRESSED': 'dpad-left', 'LEFT_RELEASED': 'dpad-left',
+                            'RIGHT_PRESSED': 'dpad-right', 'RIGHT_RELEASED': 'dpad-right',
+                        };
+                        const dpadId = dpadButtons[payload];
+                        const dpadElement = document.getElementById(dpadId);
+                        if (dpadElement) {
+                            if (addClass) {
+                                dpadElement.classList.add('active');
+                            } else {
+                                dpadElement.classList.remove('active');
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to send message:", e);
+                    showModal("ส่งข้อความล้มเหลว", "โปรดลองใหม่อีกครั้ง");
+                }
             }
-        };
+                
+            // --- Pin Control Functionality ---
+            window.handleToggleChange = function(pin, isChecked) {
+                const state = isChecked ? '1' : '0';
+                publishCommand('commands', `${pin}=${state}`);
+            }
 
-        function showModal(title, message) {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            modal.classList.add('visible');
-        }
-    </script>
+            // --- Pin Status Functions ---
+                
+                
+            function createPinStatusCards() {
+                const container = document.getElementById('pin-status-container');
+                if (!container) {
+                    console.error("Pin status container not found.");
+                    return;
+                }
+                container.innerHTML = ''; // Clear existing content
+                
+                statusPins.forEach(pin => {
+                    const pinCard = document.createElement('div');
+                    pinCard.id = `pin-status-card-${pin.id}`;
+                    pinCard.classList.add('pin-card', 'bg-new-pastel-card');
+                    
+                    // Initial content for the card
+                    pinCard.innerHTML = `
+                        <p class="text-xl font-bold text-new-pastel-text mb-2">${pin.name}</p>
+                        <p class="text-xs font-semibold text-new-pastel-text opacity-70 mb-2">${pin.type.toUpperCase()}</p>
+                        <div class="text-3xl font-bold text-new-pastel-text" id="pin-value-${pin.id}">--</div>
+                    `;
+                    
+                    container.appendChild(pinCard);
+                });
+            }
+                
+            function updatePinStatusCard(pinId, value) {
+                const pinCard = document.getElementById(`pin-status-card-${pinId}`);
+                const valueElement = document.getElementById(`pin-value-${pinId}`);
+                if (pinCard && valueElement) {
+                    // Determine the pin type from the global configuration
+                    const pinInfo = statusPins.find(p => p.id === pinId);
+                    const pinType = pinInfo ? pinInfo.type : 'unknown';
+
+                    // Update the visual status based on pin type and value
+                    pinCard.classList.remove('high', 'low', 'analog', 'bg-new-pastel-card');
+                    
+                    if (pinType === 'digital') {
+                        if (value === 1) {
+                            pinCard.classList.add('high');
+                            valueElement.textContent = "HIGH (1)";
+                        } else {
+                            pinCard.classList.add('low');
+                            valueElement.textContent = "LOW (0)";
+                        }
+                    } else if (pinType === 'analog') {
+                        pinCard.classList.add('analog');
+                        valueElement.textContent = value;
+                    } else {
+                        // Fallback for unknown pins
+                        pinCard.classList.add('bg-new-pastel-card');
+                        valueElement.textContent = value;
+                    }
+                }
+            }
+                
+            // --- Custom Message Modal UI Logic ---\
+            const modal = document.getElementById('messageModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+            modalCloseBtn.onclick = () => {
+                modal.classList.remove('visible');
+            };
+
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.classList.remove('visible');
+                }
+            };
+
+            function showModal(title, message) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modal.classList.add('visible');
+            }
+        </script>
+
+
 </body>
 </html>
