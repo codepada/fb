@@ -1142,8 +1142,9 @@
                 modal.classList.add('visible');
             }
         
+        
         // ฟังก์ชันสำหรับสร้างปุ่มลัด (แก้ไขแล้ว)
-        // ฟังก์ชันสำหรับสร้างปุ่มลัด (แก้ไขแล้ว)
+        // แก้ไขในส่วนของ window.createMessageInput เพื่อหยุดการส่ง 'end'
         window.createMessageInput = function() {
             const messageContainer = document.getElementById('message-list-container');
             const addMessageBtn = document.getElementById('addMessageBtn');
@@ -1188,9 +1189,7 @@
                     newButton.addEventListener('click', () => {
                         const message = newInput.value.trim();
                         if (message) {
-                            const key = 'message';
-                            publishCommand('commands', `${key}=${message}`);
-                            publishCommand('commands', 'end');
+                            publishCommand('commands', message);
                             updatePageStatus("ข้อความถูกส่งแล้ว", "page-message");
                         } else {
                             updatePageStatus("โปรดใส่ข้อความก่อนส่ง", "page-message");
@@ -1199,55 +1198,54 @@
                 }
             };
 
-                        // ส่วนที่ใช้สำหรับการแก้ไขชื่อ (messageContainer.addEventListener)
-                        messageContainer.addEventListener('click', (event) => {
-                            const editIcon = event.target.closest('.edit-field-icon');
-                            if (editIcon) {
-                                const newLabel = editIcon.closest('label');
-                                if (newLabel) {
-                                    const currentLabel = newLabel.textContent.trim().replace('⚙️', '').trim();
-                                    const newName = prompt("กรุณาใส่ชื่อใหม่สำหรับช่องนี้:", currentLabel);
+            // ส่วนที่ใช้สำหรับการแก้ไขชื่อ (messageContainer.addEventListener)
+            messageContainer.addEventListener('click', (event) => {
+                const editIcon = event.target.closest('.edit-field-icon');
+                if (editIcon) {
+                    const newLabel = editIcon.closest('label');
+                    if (newLabel) {
+                        const currentLabel = newLabel.textContent.trim().replace('⚙️', '').trim();
+                        const newName = prompt("กรุณาใส่ชื่อใหม่สำหรับช่องนี้:", currentLabel);
 
-                                    if (newName !== null && newName.trim() !== '') {
-                                        const icons = ['💡', '🏠', '🛋️', '🛏️', '🛁', '🪴', '❄️', '🔌', '🚪', '🚗', '🔔', '🪟', '🍽️', '💻', '⚙️', '🖨️'];
-                                        
-                                        const iconSelectionModal = document.createElement('div');
-                                        iconSelectionModal.classList.add('fixed', 'inset-0', 'bg-gray-800', 'bg-opacity-75', 'flex', 'items-center', 'justify-center', 'z-50');
-                                        iconSelectionModal.innerHTML = `
-                                            <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-                                                <h3 class="text-lg font-bold mb-4">เลือกไอคอนใหม่</h3>
-                                                <div id="icon-grid" class="grid grid-cols-6 gap-4 mb-4">
-                                                    ${icons.map(icon => `<button class="p-2 border rounded-md hover:bg-gray-200 icon-option" data-icon="${icon}">${icon}</button>`).join('')}
-                                                </div>
-                                                <div class="flex justify-end space-x-2">
-                                                    <button id="cancel-icon-btn" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">ยกเลิก</button>
-                                                </div>
-                                            </div>
-                                        `;
-                                        document.body.appendChild(iconSelectionModal);
+                        if (newName !== null && newName.trim() !== '') {
+                            const icons = ['💡', '🏠', '🛋️', '🛏️', '🛁', '🪴', '❄️', '🔌', '🚪', '🚗', '🔔', '🪟', '🍽️', '💻', '⚙️', '🖨️'];
+                            
+                            const iconSelectionModal = document.createElement('div');
+                            iconSelectionModal.classList.add('fixed', 'inset-0', 'bg-gray-800', 'bg-opacity-75', 'flex', 'items-center', 'justify-center', 'z-50');
+                            iconSelectionModal.innerHTML = `
+                                <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+                                    <h3 class="text-lg font-bold mb-4">เลือกไอคอนใหม่</h3>
+                                    <div id="icon-grid" class="grid grid-cols-6 gap-4 mb-4">
+                                        ${icons.map(icon => `<button class="p-2 border rounded-md hover:bg-gray-200 icon-option" data-icon="${icon}">${icon}</button>`).join('')}
+                                    </div>
+                                    <div class="flex justify-end space-x-2">
+                                        <button id="cancel-icon-btn" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">ยกเลิก</button>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.appendChild(iconSelectionModal);
 
-                                        document.getElementById('icon-grid').addEventListener('click', (e) => {
-                                            const iconButton = e.target.closest('.icon-option');
-                                            if (iconButton) {
-                                                const newIcon = iconButton.dataset.icon;
-                                                newLabel.dataset.icon = newIcon.trim();
-                                                newLabel.innerHTML = `${newName.trim()} <span class="edit-field-icon text-lg ml-2">⚙️</span>`;
-                                                updatePageStatus(`เปลี่ยนชื่อเป็น "${newName}" และไอคอนเป็น "${newIcon}" เรียบร้อยแล้ว`, "page-message");
-                                                document.body.removeChild(iconSelectionModal);
-                                            }
-                                        });
-
-                                        document.getElementById('cancel-icon-btn').addEventListener('click', () => {
-                                            document.body.removeChild(iconSelectionModal);
-                                            // If user cancels, only change the name and keep the old icon
-                                            newLabel.innerHTML = `${newName.trim()} <span class="edit-field-icon text-lg ml-2">⚙️</span>`;
-                                            updatePageStatus(`เปลี่ยนชื่อเป็น "${newName}" เรียบร้อยแล้ว`, "page-message");
-                                        });
-
-                                    }
+                            document.getElementById('icon-grid').addEventListener('click', (e) => {
+                                const iconButton = e.target.closest('.icon-option');
+                                if (iconButton) {
+                                    const newIcon = iconButton.dataset.icon;
+                                    newLabel.dataset.icon = newIcon.trim();
+                                    newLabel.innerHTML = `${newName.trim()} <span class="edit-field-icon text-lg ml-2">⚙️</span>`;
+                                    updatePageStatus(`เปลี่ยนชื่อเป็น "${newName}" และไอคอนเป็น "${newIcon}" เรียบร้อยแล้ว`, "page-message");
+                                    document.body.removeChild(iconSelectionModal);
                                 }
-                            }
-                        });
+                            });
+
+                            document.getElementById('cancel-icon-btn').addEventListener('click', () => {
+                                document.body.removeChild(iconSelectionModal);
+                                // If user cancels, only change the name and keep the old icon
+                                newLabel.innerHTML = `${newName.trim()} <span class="edit-field-icon text-lg ml-2">⚙️</span>`;
+                                updatePageStatus(`เปลี่ยนชื่อเป็น "${newName}" เรียบร้อยแล้ว`, "page-message");
+                            });
+                        }
+                    }
+                }
+            });
 
             const saveMessages = () => {
                 const presetName = presetNameInput.value.trim();
@@ -1366,8 +1364,7 @@
                             button.innerHTML = `<span class="text-3xl">${icon}</span><span class="text-xs mt-1">${label}</span>`;
                             button.classList.add('bg-new-pastel-card', 'text-new-pastel-text', 'font-bold', 'p-6', 'rounded-xl', 'shadow-none', 'transition', 'duration-300', 'ease-in-out', 'hover:opacity-90', 'flex', 'flex-col', 'items-center', 'justify-center', 'text-center', 'aspect-square');
                             button.addEventListener('click', () => {
-                                publishCommand('commands', `message=${value}`);
-                                publishCommand('commands', 'end');
+                                publishCommand('commands', value);
                                 updatePageStatus(`ส่งคำสั่ง "${value}" จากปุ่ม "${label}" แล้ว`, 'page-message');
                             });
                             container.appendChild(button);
@@ -1421,7 +1418,6 @@
                 importBtn.addEventListener('click', importPresets);
             }
         };
-
 
 
         
