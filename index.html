@@ -44,6 +44,21 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
     <style>
+        .container-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            padding-top: 5rem; /* ปรับเพิ่ม เพื่อให้เนื้อหาไม่ถูกบังด้วยเมนูบาร์ด้านบน */
+        }
+
+        /* ปรับสีของลิงก์ใน Navbar */
+        .sidebar-link:hover {
+            background-color: rgba(185, 133, 169, 0.2); /* B985A9 เป็นสี accent-1 */
+            color: #5C5470;
+        }
         
         body {
             font-family: 'Inter', sans-serif;
@@ -71,51 +86,7 @@
             transition: transform 0.3s ease-in-out;
         }
 
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -250px;
-            width: 250px;
-            height: 100%;
-            background-color: #B985A9;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.5);
-            transition: left 0.3s ease-in-out;
-            z-index: 50;
-            padding: 2rem 1rem;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .sidebar.open {
-            left: 0;
-        }
-        .sidebar-link {
-            width: 100%;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            color: #FDF9F8;
-            transition: background-color 0.2s;
-        }
-        .sidebar-link:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        .hamburger-btn {
-            position: fixed;
-            top: 1rem;
-            left: 1rem;
-            z-index: 60;
-            background-color: #B985A9;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-        .hamburger-btn svg {
-            fill: #FDF9F8;
-            width: 24px;
-            height: 24px;
-        }
+       
         .hidden-page {
             display: none;
         }
@@ -413,23 +384,28 @@
 </head>
 <body class="bg-ui-bg min-h-screen">
     
-    <div class="hamburger-btn" onclick="toggleSidebar()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-        </svg>
-    </div>
+    <nav class="bg-new-pastel-card shadow-lg p-2 flex justify-between items-center fixed top-0 left-0 w-full z-50">
+            <div class="flex items-center space-x-4">
+                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-connect')">Connect</a>
+                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-gamepad')">Gamepad</a>
+                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-pins')">Pin Control</a>
+                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-pin-status')">Pin Status</a>
+                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-message')">Message</a>
+            </div>
+            <div class="connection-status-container">
+                <div id="connection-status-circle" class="w-3 h-3 rounded-full bg-red-500"></div>
+                <div id="connection-status-text" class="font-medium text-new-pastel-text">สถานะ: ไม่ได้เชื่อมต่อ</div>
+            </div>
+        </nav>
+        
+        
+       
+    
 
-    <div class="connection-status-container">
-        <div id="connection-status-circle" class="w-3 h-3 rounded-full bg-red-500"></div>
-        <div id="connection-status-text" class="font-medium text-new-pastel-text">สถานะ: ไม่ได้เชื่อมต่อ</div>
-    </div>
+    
 
-    <div id="sidebar" class="sidebar">
-        <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-connect')">Connect</a>
-        <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-gamepad')">Gamepad</a>
-        <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-pins')">Pin Control</a>
-        <a href="#" class="sidebar-link my-2" onclick="showPage(event, 'page-pin-status')">Pin Status</a>
-    </div>
+    
+    
 
     <div class="container-wrapper">
         <div class="main-content">
@@ -571,7 +547,71 @@
                 <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pin-status"></div>
                 
             </section>
-            
+            <section id="page-message" class="hidden-page">
+                <div class="p-4 rounded-lg shadow-none bg-new-pastel-card">
+                        <h2 class="text-2xl font-bold mb-4 text-new-pastel-text">สร้างปุ่มสำหรับส่งข้อมูล</h2>
+                        <div class="flex flex-col sm:flex-row items-center justify-between mb-4 space-y-2 sm:space-y-0">
+                            <button id="show-shortcuts-btn" class="bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 w-full sm:w-auto">
+                                Shortcut
+                            </button>
+                            <div class="relative w-full sm:w-auto">
+                                <label for="presetNameInput" class="sr-only">ชื่อชุดข้อความ (Preset Name)</label>
+                                <input type="text" id="presetNameInput" placeholder="Set Preset Name" class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
+                            </div>
+                        </div>
+
+                        <div id="message-list-container" class="space-y-4">
+                        </div>
+
+                        <div class="flex items-center space-x-2 mt-4">
+                            <button id="addMessageBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                + Add Message
+                            </button>
+                            <button id="saveMessagesBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                Save
+                            </button>
+                        </div>
+
+                        <div class="mt-8">
+                            <label for="presetSelector" class="block text-sm font-medium text-new-pastel-text">Preset</label>
+                            <div class="flex items-center mt-1 space-x-2">
+                                <select id="presetSelector" class="block w-full rounded-md border-gray-300 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
+                                </select>
+                                <button id="loadPresetBtn" class="bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                    Load
+                                </button>
+                                <button id="deletePresetBtn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <h3 class="text-lg font-bold mb-2 text-new-pastel-text">Export/Import</h3>
+                            <textarea id="shareDataTextarea" rows="4" class="block w-full rounded-md border-gray-300 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text" placeholder="วางข้อมูลที่นี่เพื่อนำเข้า"></textarea>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <button id="exportBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                    Export
+                                </button>
+                                <button id="importBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                    Import
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+            </section>
+
+            <section id="page-shortcuts" class="hidden-page">
+                <div class="p-4 rounded-lg shadow-sm bg-new-pastel-card">
+                    <h2 class="text-2xl font-bold mb-6 text-new-pastel-text">Shortcut</h2>
+                    <div id="shortcut-buttons-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    </div>
+                    
+                    <button id="back-to-message-btn" class="mt-8 bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+                        Back
+                    </button>
+                </div>
+            </section>
 
         </div>
     </div>
@@ -637,7 +677,7 @@
             // เพิ่มฟังก์ชันนี้ลงใน <script> block
             window.requestPinStatus = function() {
                 if (!isConnected) {
-                    showModal("ไม่ได้เชื่อมต่อ", "โปรดเชื่อมต่อกับ Broker ก่อน");
+                   
                     return;
                 }
                 // Publish a command to request all pin status data
@@ -668,6 +708,7 @@
                 // Start on the Connect page
                 showPage(null, 'page-connect');
                 createPinStatusCards();
+                createMessageInput();
             };
 
             // --- Main MQTT Initialization Function ---
@@ -694,28 +735,39 @@
                 sidebar.classList.toggle('open');
             }
 
-            window.showPage = function(event, pageId) {
-                if (event) {
-                    event.preventDefault();
-                }
-                const pages = document.querySelectorAll('section[id^="page-"]');
-                pages.forEach(page => {
-                    page.classList.add('hidden-page');
-                });
-                const selectedPage = document.getElementById(pageId);
-                if (selectedPage) {
-                    selectedPage.classList.remove('hidden-page');
-                } else {
-                    console.error(`Page with ID ${pageId} not found.`);
-                }
-                const sidebar = document.getElementById('sidebar');
-                if (sidebar) {
-                    sidebar.classList.remove('open');
-                }
-
-                // Trigger action based on the selected page
-                handlePageChange(pageId);
+        window.showPage = function(event, pageId) {
+            if (event) {
+                event.preventDefault();
             }
+
+            // ซ่อนหน้าทั้งหมด
+            const pages = document.querySelectorAll('section[id^="page-"]');
+            pages.forEach(page => {
+                page.classList.add('hidden-page');
+            });
+
+            // แสดงเฉพาะหน้าปัจจุบันที่ถูกเลือก
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.remove('hidden-page');
+                
+                // ส่งคำสั่ง mode ไปยัง Micro:bit ตามหน้า
+                if (pageId === 'page-connect') {
+                    publishCommand('commands', 'mode=1');
+                } else if (pageId === 'page-gamepad') {
+                    publishCommand('commands', 'mode=2');
+                } else if (pageId === 'page-pins') {
+                    publishCommand('commands', 'mode=3');
+                } else if (pageId === 'page-pin-status') {
+                    publishCommand('commands', 'mode=4');
+                } else if (pageId === 'page-message') {
+                    // ส่งคำสั่ง mode=5 สำหรับหน้าข้อความ
+                    publishCommand('commands', 'mode=5');
+                }
+            } else {
+                console.error(`Page with ID ${pageId} not found.`);
+            }
+        };
 
                     
                     function handlePageChange(pageId) {
@@ -832,7 +884,7 @@
                 console.log("Connection failed: " + responseObject.errorMessage);
                 isConnected = false;
                 updateConnectionStatus(`สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`, "red");
-                showModal("การเชื่อมต่อล้มเหลว", `โปรดตรวจสอบ ID และลองใหม่อีกครั้ง. Error: ${responseObject.errorMessage}`);
+               
             }
 
             // --- Complete the onConnectionLost function ---
@@ -841,7 +893,7 @@
                     console.log("Connection lost: " + responseObject.errorMessage);
                     isConnected = false;
                     updateConnectionStatus("สถานะ: ไม่ได้เชื่อมต่อ", "red");
-                    showModal("การเชื่อมต่อขาดหาย", `การเชื่อมต่อกับ Broker ขาดหาย Error: ${responseObject.errorMessage}`);
+                    
                 }
             }
             
@@ -957,7 +1009,7 @@
 
             window.publishCommand = function(topicSuffix, payload, addClass) {
                 if (!isConnected) {
-                    showModal("ไม่ได้เชื่อมต่อ", "โปรดเชื่อมต่อกับ Broker ก่อน");
+                    
                     return;
                 }
                 if (!client) {
@@ -1089,6 +1141,291 @@
                 modalMessage.textContent = message;
                 modal.classList.add('visible');
             }
+        
+        // ฟังก์ชันสำหรับสร้างปุ่มลัด (แก้ไขแล้ว)
+        // ฟังก์ชันสำหรับสร้างปุ่มลัด (แก้ไขแล้ว)
+        window.createMessageInput = function() {
+            const messageContainer = document.getElementById('message-list-container');
+            const addMessageBtn = document.getElementById('addMessageBtn');
+            const presetNameInput = document.getElementById('presetNameInput');
+            const saveMessagesBtn = document.getElementById('saveMessagesBtn');
+            const presetSelector = document.getElementById('presetSelector');
+            const loadPresetBtn = document.getElementById('loadPresetBtn');
+            const deletePresetBtn = document.getElementById('deletePresetBtn');
+            const shareDataTextarea = document.getElementById('shareDataTextarea');
+            const exportBtn = document.getElementById('exportBtn');
+            const importBtn = document.getElementById('importBtn');
+            const showShortcutsBtn = document.getElementById('show-shortcuts-btn');
+            const backToMessageBtn = document.getElementById('back-to-message-btn');
+            const messagePage = document.getElementById('page-message');
+            const shortcutPage = document.getElementById('page-shortcuts');
+
+            const addMessageField = (value = '', labelText = 'Name', icon = '🔗') => {
+                const messageCount = messageContainer.children.length / 2 + 1;
+                const newFieldId = `message-field-${messageCount}`;
+                const newInputId = `messageInput${messageCount}`;
+                const newBtnId = `sendMessageBtn${messageCount}`;
+                const newLabelId = `messageLabel${messageCount}`;
+
+                const newFieldHTML = `
+                    <div id="${newFieldId}" class="p-4 bg-new-pastel-card rounded-lg shadow-none flex items-center space-x-4">
+                        <label id="${newLabelId}" for="${newInputId}" class="block w-32 text-sm font-medium text-new-pastel-text whitespace-nowrap cursor-pointer hover:text-new-pastel-accent-1" data-icon="${icon}">
+                            ${labelText}
+                            <span class="edit-field-icon text-lg ml-2">⚙️</span>
+                        </label>
+                        <input type="text" id="${newInputId}" placeholder="ใส่ข้อความที่จะส่ง" value="${value}" class="mt-1 flex-auto w-full rounded-md border-new-pastel-accent-2 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
+                        <button id="${newBtnId}" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 whitespace-nowrap">
+                            Send
+                        </button>
+                    </div>
+                    `;
+                messageContainer.insertAdjacentHTML('beforeend', newFieldHTML);
+
+                const newButton = document.getElementById(newBtnId);
+                const newInput = document.getElementById(newInputId);
+                
+                if (newButton) {
+                    newButton.addEventListener('click', () => {
+                        const message = newInput.value.trim();
+                        if (message) {
+                            const key = 'message';
+                            publishCommand('commands', `${key}=${message}`);
+                            publishCommand('commands', 'end');
+                            updatePageStatus("ข้อความถูกส่งแล้ว", "page-message");
+                        } else {
+                            updatePageStatus("โปรดใส่ข้อความก่อนส่ง", "page-message");
+                        }
+                    });
+                }
+            };
+
+                        // ส่วนที่ใช้สำหรับการแก้ไขชื่อ (messageContainer.addEventListener)
+                        messageContainer.addEventListener('click', (event) => {
+                            const editIcon = event.target.closest('.edit-field-icon');
+                            if (editIcon) {
+                                const newLabel = editIcon.closest('label');
+                                if (newLabel) {
+                                    const currentLabel = newLabel.textContent.trim().replace('⚙️', '').trim();
+                                    const newName = prompt("กรุณาใส่ชื่อใหม่สำหรับช่องนี้:", currentLabel);
+
+                                    if (newName !== null && newName.trim() !== '') {
+                                        const icons = ['💡', '🏠', '🛋️', '🛏️', '🛁', '🪴', '❄️', '🔌', '🚪', '🚗', '🔔', '🪟', '🍽️', '💻', '⚙️', '🖨️'];
+                                        
+                                        const iconSelectionModal = document.createElement('div');
+                                        iconSelectionModal.classList.add('fixed', 'inset-0', 'bg-gray-800', 'bg-opacity-75', 'flex', 'items-center', 'justify-center', 'z-50');
+                                        iconSelectionModal.innerHTML = `
+                                            <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+                                                <h3 class="text-lg font-bold mb-4">เลือกไอคอนใหม่</h3>
+                                                <div id="icon-grid" class="grid grid-cols-6 gap-4 mb-4">
+                                                    ${icons.map(icon => `<button class="p-2 border rounded-md hover:bg-gray-200 icon-option" data-icon="${icon}">${icon}</button>`).join('')}
+                                                </div>
+                                                <div class="flex justify-end space-x-2">
+                                                    <button id="cancel-icon-btn" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">ยกเลิก</button>
+                                                </div>
+                                            </div>
+                                        `;
+                                        document.body.appendChild(iconSelectionModal);
+
+                                        document.getElementById('icon-grid').addEventListener('click', (e) => {
+                                            const iconButton = e.target.closest('.icon-option');
+                                            if (iconButton) {
+                                                const newIcon = iconButton.dataset.icon;
+                                                newLabel.dataset.icon = newIcon.trim();
+                                                newLabel.innerHTML = `${newName.trim()} <span class="edit-field-icon text-lg ml-2">⚙️</span>`;
+                                                updatePageStatus(`เปลี่ยนชื่อเป็น "${newName}" และไอคอนเป็น "${newIcon}" เรียบร้อยแล้ว`, "page-message");
+                                                document.body.removeChild(iconSelectionModal);
+                                            }
+                                        });
+
+                                        document.getElementById('cancel-icon-btn').addEventListener('click', () => {
+                                            document.body.removeChild(iconSelectionModal);
+                                            // If user cancels, only change the name and keep the old icon
+                                            newLabel.innerHTML = `${newName.trim()} <span class="edit-field-icon text-lg ml-2">⚙️</span>`;
+                                            updatePageStatus(`เปลี่ยนชื่อเป็น "${newName}" เรียบร้อยแล้ว`, "page-message");
+                                        });
+
+                                    }
+                                }
+                            }
+                        });
+
+            const saveMessages = () => {
+                const presetName = presetNameInput.value.trim();
+                if (!presetName) {
+                    updatePageStatus("โปรดตั้งชื่อชุดข้อความก่อนบันทึก", "page-message");
+                    return;
+                }
+
+                const messageInputs = document.querySelectorAll('input[id^="messageInput"]');
+                const messageLabels = document.querySelectorAll('label[id^="messageLabel"]');
+                const messagesToSave = Array.from(messageInputs).map((input, index) => {
+                    const labelEl = messageLabels[index];
+                    const label = labelEl ? labelEl.textContent.trim().replace('✍️', '').trim() : `ข้อความ ${index + 1}`;
+                    const icon = labelEl ? labelEl.dataset.icon : '🔗';
+                    return { label: label, value: input.value, icon: icon };
+                });
+
+                let presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                presets[presetName] = messagesToSave;
+                localStorage.setItem('messagePresets', JSON.stringify(presets));
+                updatePresetSelector();
+                createShortcutButtons();
+                updatePageStatus(`บันทึกชุดข้อความ "${presetName}" เรียบร้อยแล้ว`, "page-message");
+            };
+
+            const loadPreset = () => {
+                const presetName = presetSelector.value;
+                if (!presetName) {
+                    updatePageStatus("โปรดเลือกชุดข้อความที่ต้องการโหลด", "page-message");
+                    return;
+                }
+
+                const presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                const messages = presets[presetName];
+
+                if (messages) {
+                    messageContainer.innerHTML = '';
+                    messages.forEach(item => addMessageField(item.value, item.label, item.icon));
+                    presetNameInput.value = presetName;
+                    createShortcutButtons();
+                    updatePageStatus(`โหลดชุดข้อความ "${presetName}" เรียบร้อยแล้ว`, "page-message");
+                }
+            };
+
+            const deletePreset = () => {
+                const presetName = presetSelector.value;
+                if (!presetName) {
+                    updatePageStatus("โปรดเลือกชุดข้อความที่ต้องการลบ", "page-message");
+                    return;
+                }
+
+                let presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                delete presets[presetName];
+                localStorage.setItem('messagePresets', JSON.stringify(presets));
+                updatePresetSelector();
+                updatePageStatus(`ลบชุดข้อความ "${presetName}" เรียบร้อยแล้ว`, "page-message");
+            };
+
+            const exportPresets = () => {
+                const presets = localStorage.getItem('messagePresets');
+                shareDataTextarea.value = presets;
+                updatePageStatus("คัดลอกข้อความในช่องด้านล่างเพื่อแชร์", "page-message");
+            };
+
+            const importPresets = () => {
+                try {
+                    const dataToImport = shareDataTextarea.value;
+                    if (!dataToImport) {
+                        updatePageStatus("โปรดวางข้อมูลในช่องก่อนนำเข้า", "page-message");
+                        return;
+                    }
+
+                    const importedPresets = JSON.parse(dataToImport);
+                    let currentPresets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                    const newPresets = { ...currentPresets, ...importedPresets };
+                    localStorage.setItem('messagePresets', JSON.stringify(newPresets));
+                    updatePresetSelector();
+                    createShortcutButtons();
+                    updatePageStatus("นำเข้าข้อมูลเรียบร้อยแล้ว", "page-message");
+                } catch (e) {
+                    updatePageStatus("ข้อมูลที่นำเข้าไม่ถูกต้อง", "page-message");
+                }
+            };
+
+            const updatePresetSelector = () => {
+                const presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                presetSelector.innerHTML = '<option value="">-- Select --</option>';
+                for (const name in presets) {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    presetSelector.appendChild(option);
+                }
+            };
+
+            // ในฟังก์ชัน createShortcutButtons
+            const createShortcutButtons = () => {
+                const container = document.getElementById('shortcut-buttons-container');
+                if (!container) return;
+                container.innerHTML = '';
+
+                const messageInputs = document.querySelectorAll('input[id^="messageInput"]');
+                const messageLabels = document.querySelectorAll('label[id^="messageLabel"]');
+
+                if (messageInputs.length > 0) {
+                    Array.from(messageInputs).forEach((input, index) => {
+                        const labelEl = messageLabels[index];
+                        if (!labelEl) return;
+
+                        const label = labelEl.textContent.trim().replace('⚙️', '').trim();
+                        const value = input.value;
+                        const icon = labelEl.dataset.icon || '🔗';
+
+                        if (value.trim() !== '') {
+                            const button = document.createElement('button');
+                            button.innerHTML = `<span class="text-3xl">${icon}</span><span class="text-xs mt-1">${label}</span>`;
+                            button.classList.add('bg-new-pastel-card', 'text-new-pastel-text', 'font-bold', 'p-6', 'rounded-xl', 'shadow-none', 'transition', 'duration-300', 'ease-in-out', 'hover:opacity-90', 'flex', 'flex-col', 'items-center', 'justify-center', 'text-center', 'aspect-square');
+                            button.addEventListener('click', () => {
+                                publishCommand('commands', `message=${value}`);
+                                publishCommand('commands', 'end');
+                                updatePageStatus(`ส่งคำสั่ง "${value}" จากปุ่ม "${label}" แล้ว`, 'page-message');
+                            });
+                            container.appendChild(button);
+                        }
+                    });
+                }
+            };
+
+            if (showShortcutsBtn) {
+                showShortcutsBtn.addEventListener('click', () => {
+                    messagePage.classList.add('hidden-page');
+                    shortcutPage.classList.remove('hidden-page');
+                    createShortcutButtons();
+                });
+            }
+
+            if (backToMessageBtn) {
+                backToMessageBtn.addEventListener('click', () => {
+                    shortcutPage.classList.add('hidden-page');
+                    messagePage.classList.remove('hidden-page');
+                });
+            }
+
+            updatePresetSelector();
+            const presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+            if (Object.keys(presets).length > 0) {
+                const firstPresetName = Object.keys(presets)[0];
+                const messages = presets[firstPresetName];
+                messages.forEach(item => addMessageField(item.value, item.label, item.icon));
+                presetNameInput.value = firstPresetName;
+            } else {
+                addMessageField();
+            }
+
+            if (addMessageBtn) {
+                addMessageBtn.addEventListener('click', () => addMessageField(''));
+            }
+            if (saveMessagesBtn) {
+                saveMessagesBtn.addEventListener('click', saveMessages);
+            }
+            if (loadPresetBtn) {
+                loadPresetBtn.addEventListener('click', loadPreset);
+            }
+            if (deletePresetBtn) {
+                deletePresetBtn.addEventListener('click', deletePreset);
+            }
+            if (exportBtn) {
+                exportBtn.addEventListener('click', exportPresets);
+            }
+            if (importBtn) {
+                importBtn.addEventListener('click', importPresets);
+            }
+        };
+
+
+
+        
+        
         </script>
 
 
