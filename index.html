@@ -574,9 +574,7 @@
                                             Save
                                         </button>
                                         
-                                        <button id="voiceInputBtn" class="bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
-                                            🎙️ speak
-                                        </button>
+                                       
                                     </div>
 
                                     <div class="mt-8">
@@ -713,23 +711,41 @@
                 }
             });
             
-            // --- Event Listener for Page Load ---
-            window.onload = function() {
-                if (typeof Paho === 'undefined' || !Paho.MQTT || !Paho.MQTT.Client) {
-                    const connectionTextElement = document.getElementById('connection-status-text');
-                    if (connectionTextElement) {
-                        connectionTextElement.textContent = "Error: Paho script not loaded.";
-                        connectionTextElement.style.color = "red";
+            // --- Status Display Function ---
+                    function showStatus(message, isError) {
+                        const statusDisplay = document.getElementById('status-display');
+                        if (statusDisplay) {
+                            statusDisplay.textContent = message;
+                            if (isError) {
+                                statusDisplay.style.color = 'red';
+                            } else {
+                                statusDisplay.style.color = 'black';
+                            }
+                        }
                     }
-                    console.error("Paho MQTT client is not loaded. Check the script link or internet connection.");
-                    return;
-                }
-                initializeMQTT();
-                // Start on the Connect page
-                showPage(null, 'page-connect');
-                createPinStatusCards();
-                createMessageInput();
-            };
+            
+            
+
+                    
+                    // --- Event Listener for Page Load ---
+                    window.onload = function() {
+                        if (typeof Paho === 'undefined' || !Paho.MQTT || !Paho.MQTT.Client) {
+                            const connectionStatusText = document.getElementById('connection-status-text');
+                            if (connectionStatusText) {
+                                connectionStatusText.textContent = "Error: Paho script not loaded.";
+                                connectionStatusText.style.color = "red";
+                            }
+                            console.error("Paho MQTT client is not loaded. Check the script link or internet connection.");
+                            return;
+                        }
+                        initializeMQTT();
+                        showPage(null, 'page-connect');
+                        createPinStatusCards();
+                        createMessageInput();
+
+                       
+                    };
+
 
             // --- Main MQTT Initialization Function ---
             function initializeMQTT() {
@@ -1208,7 +1224,7 @@
             const backToMessageBtn = document.getElementById('back-to-message-btn');
             const messagePage = document.getElementById('page-message');
             const shortcutPage = document.getElementById('page-shortcuts');
-            const voiceInputBtn = document.getElementById('voiceInputBtn');
+            
 
             // เพิ่มตัวแปรสำหรับ Web Speech API
             let speechRecognition;
@@ -1438,66 +1454,9 @@
                 });
             };
 
-            // ฟังก์ชันสำหรับเริ่มการรับเสียง (ย้ายมาอยู่ในบล็อกนี้)
-            const startVoiceRecognition = () => {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+           
 
-                if (!SpeechRecognition) {
-                    showModal('ไม่รองรับ', 'เบราว์เซอร์ของคุณไม่รองรับการแปลงเสียงเป็นข้อความ');
-                    return;
-                }
-
-                // หยุดการรับเสียงเดิมหากมีอยู่ เพื่อป้องกันข้อผิดพลาด
-                if (isListening) {
-                    speechRecognition.stop();
-                }
-
-                speechRecognition = new SpeechRecognition();
-                speechRecognition.lang = 'th-TH'; // ตั้งค่าภาษาเป็นไทย
-                speechRecognition.interimResults = false; // รับเฉพาะผลลัพธ์สุดท้าย
-                speechRecognition.maxAlternatives = 1; // เลือกผลลัพธ์ที่มีความเป็นไปได้สูงสุด
-
-                // เมื่อเริ่มรับเสียง
-                speechRecognition.onstart = () => {
-                    isListening = true;
-                    voiceInputBtn.textContent = '🔴 กำลังฟัง...';
-                    voiceInputBtn.classList.add('animate-pulse');
-                    updatePageStatus("กดค้างเพื่อพูด และปล่อยเพื่อส่ง", "page-message");
-                };
-
-                // เมื่อแปลงเสียงได้สำเร็จ
-                speechRecognition.onresult = (event) => {
-                    const result = event.results[event.results.length - 1][0].transcript;
-                    addLogMessage(`[จากเสียงพูด] ${result}`);
-                    publishCommand('commands', result);
-                    updatePageStatus("ส่งข้อความจากเสียงเรียบร้อยแล้ว", "page-message");
-                };
-
-                // เมื่อการรับเสียงสิ้นสุดลง
-                speechRecognition.onend = () => {
-                    isListening = false;
-                    voiceInputBtn.textContent = '🎙️ พูด';
-                    voiceInputBtn.classList.remove('animate-pulse');
-                };
-
-                // เมื่อเกิดข้อผิดพลาด
-                speechRecognition.onerror = (event) => {
-                    console.error('Speech recognition error:', event.error);
-                    isListening = false;
-                    voiceInputBtn.textContent = '🎙️ พูด';
-                    voiceInputBtn.classList.remove('animate-pulse');
-                    let errorMsg = 'เกิดข้อผิดพลาดในการรับเสียง';
-                    if (event.error === 'not-allowed') {
-                        errorMsg = 'โปรดอนุญาตให้เข้าถึงไมโครโฟนก่อน';
-                    } else if (event.error === 'no-speech') {
-                        errorMsg = 'ไม่พบเสียง';
-                    }
-                    showModal('ข้อผิดพลาด', errorMsg);
-                    updatePageStatus(errorMsg, "page-message");
-                };
-                
-                speechRecognition.start();
-            };
+               
 
             if (showShortcutsBtn) {
                 showShortcutsBtn.addEventListener('click', () => {
@@ -1544,25 +1503,7 @@
                 importBtn.addEventListener('click', importPresets);
             }
             
-            // เปลี่ยนจาก click เป็น mousedown และ mouseup
-            if (voiceInputBtn) {
-                voiceInputBtn.addEventListener('mousedown', startVoiceRecognition);
-                voiceInputBtn.addEventListener('mouseup', () => {
-                    if (isListening) {
-                        speechRecognition.stop();
-                    }
-                });
-                // สำหรับมือถือ
-                voiceInputBtn.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    startVoiceRecognition();
-                });
-                voiceInputBtn.addEventListener('touchend', () => {
-                    if (isListening) {
-                        speechRecognition.stop();
-                    }
-                });
-            }
+            
         };
 
         
