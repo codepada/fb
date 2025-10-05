@@ -726,8 +726,13 @@
 let finalTranscript = '';
 let isRecording = false;
 
-// Function to handle the voice commands
-
+// Func// เพิ่มฟังก์ชันนี้ที่ไหนก็ได้ในแท็ก <script> ของคุณ
+function preventSelection(event) {
+    // ป้องกันพฤติกรรมเริ่มต้นของเบราว์เซอร์ เช่น การเลือกข้อความ
+    event.preventDefault(); 
+    // หยุด Event ไม่ให้แพร่กระจายไป
+    event.stopPropagation();
+}
 function handleVoiceCommand(transcript) {
     const lowerTranscript = transcript.toLowerCase().trim();
     let commandToSend = "";
@@ -1126,6 +1131,20 @@ window.stopVoiceRecognition = function(isError = false) {
                 if (requestBtn) {
                     requestBtn.addEventListener('click', requestPinStatus);
                 }
+                const voiceRecordBtn = document.getElementById('voice-record-btn');
+    
+    if (voiceRecordBtn) {
+        // ป้องกันการเลือกข้อความ/คัดลอก เมื่อมีการกดปุ่ม
+        
+        // 1. ป้องกันเมนูบริบท (Context Menu) ที่เกิดจากการกดค้าง (สำคัญมากสำหรับมือถือ)
+        voiceRecordBtn.addEventListener('contextmenu', preventSelection); 
+        
+        // 2. ป้องกันพฤติกรรมการเลือกข้อความเมื่อสัมผัสหน้าจอ
+        voiceRecordBtn.addEventListener('touchstart', preventSelection); 
+        
+        // 3. ป้องกันพฤติกรรมการเลือกข้อความเมื่อกดเมาส์ (สำหรับ Desktop/Tablet)
+        voiceRecordBtn.addEventListener('mousedown', preventSelection); 
+    }
             });
             
             // --- Status Display Function ---
