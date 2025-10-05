@@ -1,0 +1,2055 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micro:bit Multi-Page Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'new-pastel': {
+                            'bg': '#FDF9F8',
+                            'card': '#E8E2E6',
+                            'text': '#5C5470',
+                            'accent-1': '#B985A9',
+                            'accent-2': '#A9B3CE',
+                            'accent-3': '#C2D1C1',
+                        },
+                        'ui-bg': '#E9E3E8',
+                        'gamepad-base': '#424F64',
+                        'dpad-green': '#65C8BF',
+                        'dpad-center': '#89999F',
+                        'action-red': '#E97262',
+                        'action-yellow': '#ECC278',
+                        'action-green': '#62C2BF',
+                        'action-blue': '#5C8DCA',
+                        // เพิ่มสีใหม่สำหรับ Pin Control
+                                                'pin-high': '#d1fae5',
+                                                'pin-low': '#fee2e2',
+                                                'pin-analog': '#e0f2fe',
+                                                'pin-default': '#E8E2E6',
+                    },
+                },
+            },
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+    <style>
+        .container-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            padding-top: 5rem; /* ปรับเพิ่ม เพื่อให้เนื้อหาไม่ถูกบังด้วยเมนูบาร์ด้านบน */
+        }
+
+        /* ปรับสีของลิงก์ใน Navbar */
+        .sidebar-link:hover {
+            background-color: rgba(185, 133, 169, 0.2); /* B985A9 เป็นสี accent-1 */
+            color: #5C5470;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #E9E3E8;
+            color: #5C5470;
+        }
+        .bg-gradient-primary {
+            background-image: linear-gradient(135deg, #B985A9 0%, #A9B3CE 100%);
+        }
+        .container-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .main-content {
+            width: 100%;
+            max-width: 600px;
+            background-color: #E8E2E6;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2.5rem 1.5rem;
+            transition: transform 0.3s ease-in-out;
+        }
+
+       
+        .hidden-page {
+            display: none;
+        }
+
+       
+        .connection-status-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #E8E2E6;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Gamepad styles */
+        .gamepad-container {
+            background-color: #E9E3E8;
+            padding: 2.5rem 2rem;
+            border-radius: 2rem;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .gamepad-inner {
+            background-color: #424F64;
+            border-radius: 1.5rem;
+            padding: 3rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .control-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out, background-color 0.1s ease-in-out;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        /* Styles for Pin Control Page */
+                .pin-control-card {
+                    transition: all 0.3s ease-in-out;
+                    border-radius: 1rem;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    padding: 1.5rem;
+                    background-color: #E8E2E6; /* Default card color */
+                }
+                
+                /* Styles for the pin status circle on the Pin Control page */
+                .pin-status-circle {
+                    transition: background-color 0.3s ease-in-out;
+                    border-radius: 9999px;
+                    width: 1rem;
+                    height: 1rem;
+                }
+
+                .pin-status-circle.high {
+                    background-color: #34d399; /* A vivid green for HIGH status */
+                }
+
+                .pin-status-circle.low {
+                    background-color: #ef4444; /* A vivid red for LOW status */
+                }
+                
+                /* NEW: Styles for pin control buttons */
+                .control-btn {
+                    padding: 0.5rem 1rem;
+                    border-radius: 9999px;
+                    font-weight: 600;
+                    color: white;
+                    transition: all 0.2s;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                }
+                .control-btn:active {
+                    transform: scale(0.95);
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset;
+                }
+                .btn-green { background-color: #62C2BF; }
+                .btn-red { background-color: #E97262; }
+        .control-button:active, .control-button.active {
+            transform: scale(0.95);
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 0 10px 2px var(--button-color);
+        }
+        .dpad-container {
+            display: grid;
+            grid-template-areas:
+                ". up ."
+                "left center right"
+                ". down .";
+            grid-template-columns: repeat(3, 45px);
+            grid-template-rows: repeat(3, 45px);
+            gap: 2px;
+            background-color: #424F64;
+            border-radius: 4px;
+        }
+        .dpad-button {
+            width: 45px;
+            height: 45px;
+            border-radius: 9999px;
+            background-color: #65C8BF;
+            transition: background-color 0.1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .dpad-button:active, .dpad-button.active {
+            transform: scale(0.95);
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 0 10px 2px #65C8BF;
+        }
+        .dpad-up { grid-area: up; }
+        .dpad-down { grid-area: down; }
+        .dpad-left { grid-area: left; }
+        .dpad-right { grid-area: right; }
+        .dpad-center {
+            grid-area: center;
+            background-color: #89999F;
+            border-radius: 4px;
+            width: 45px;
+            height: 45px;
+        }
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .action-row {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+        .action-buttons button {
+            width: 50px;
+            height: 50px;
+            border-radius: 9999px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn-h { background-color: #E97262; --button-color: #E97262; }
+        .btn-j { background-color: #5C8DCA; --button-color: #5C8DCA; }
+        .btn-k { background-color: #ECC278; --button-color: #ECC278; }
+        .btn-l { background-color: #62C2BF; --button-color: #62C2BF; }
+
+        /* Styles for the new toggle switch and analog slider */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #65C8BF;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        input:disabled + .slider {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+        input:disabled + .slider:before {
+            background-color: #bbb;
+        }
+        .analog-slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: #e0f2fe;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .analog-slider-container input[type="range"] {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        .analog-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        /* Styles for Pin Status Page */
+        .pin-card {
+            transition: all 0.3s ease-in-out;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .pin-card.high {
+            background-color: #d1fae5; /* Green */
+        }
+        .pin-card.low {
+            background-color: #fee2e2; /* Red */
+        }
+        .pin-card.analog {
+            background-color: #e0f2fe; /* Blue */
+        }
+
+        /* Custom Modal UI */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s;
+        }
+        .modal.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background-color: #E8E2E6;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-out;
+        }
+        .modal.visible .modal-content {
+            transform: translateY(0);
+        }
+        
+        
+        /* NEW: Styles for the pin status circle on the Pin Control page */
+                .pin-status-circle {
+                    transition: background-color 0.3s ease-in-out;
+                }
+
+                .pin-status-circle.low {
+                    background-color: #f87171; /* A light red for LOW status */
+                }
+                .pin-status-circle.high {
+                    background-color: #34d399; /* A light green for HIGH status */
+                }
+        
+    </style>
+</head>
+<body class="bg-ui-bg min-h-screen">
+    
+    <header class="fixed top-0 left-0 w-full bg-new-pastel-card p-3 shadow-md z-50 flex items-center justify-between">
+    <div class="flex items-center">
+        <button id="menu-toggle-btn" class="text-new-pastel-text p-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+        <h1 class="text-lg font-bold ml-4 text-new-pastel-text">Micro:bit Control</h1>
+    </div>
+    
+    <div class="connection-status-container">
+        <div id="connection-status-circle" class="w-3 h-3 rounded-full bg-red-500"></div>
+        <div id="connection-status-text" class="font-medium text-new-pastel-text">สถานะ: ไม่ได้เชื่อมต่อ</div>
+    </div>
+</header>
+
+<div id="dropdown-menu" class="fixed top-0 left-0 h-full w-64 bg-new-pastel-bg shadow-2xl z-50 transform -translate-x-full transition-transform duration-300">
+    <div class="p-4 text-new-pastel-text space-y-2 pt-16">
+        
+        <button id="nav-btn-connect" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-connect')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0v4m-3 3h-2a1 1 0 00-1 1v4a1 1 0 001 1h2a1 1 0 001-1v-4a1 1 0 00-1-1z" /></svg>Connect
+        </button>
+        
+        <button id="nav-btn-gamepad" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-gamepad')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15.75L6.75 11.5L11 7.25M13 7.25L17.25 11.5L13 15.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Gamepad
+        </button>
+        
+        <button id="nav-btn-pins" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-pins')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20v-6h4v6a1 1 0 001 1h3a1 1 0 001-1v-9l-7-6-7 6v9a1 1 0 001 1h3a1 1 0 001-1z" /></svg>Pin Control
+        </button>
+        
+        <button id="nav-btn-pin-status" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-pin-status')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6m-1-7h1m-1 4h1m-1 7h1" /></svg>Pin Status
+        </button>
+        
+        <button id="nav-btn-message" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-message')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-3.692-.68l-3.23 1.077c-.473.158-.97-.24-1.127-.713l-1.077-3.23A9.86 9.86 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>Message
+        </button>
+        
+        <button id="nav-btn-voice" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-voice')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7v-2m0-12V5a7 7 0 017 7h-2m-7 0a5 5 0 015-5v-2a9 9 0 00-9 9h2m5-5v10a4 4 0 01-4 4H9a4 4 0 01-4-4V7a4 4 0 014-4h2a4 4 0 014 4z" />
+            </svg>
+            Voice
+        </button>
+        
+    </div>
+</div>
+
+<div id="menu-overlay" class="fixed inset-0 bg-black opacity-0 z-40 hidden transition-opacity duration-300"></div>
+        
+        
+       
+    
+
+    
+
+    
+    
+
+    <div class="container-wrapper">
+        <div class="main-content **pt-16**">
+            <section id="page-connect" class="space-y-4">
+                <h2 class="text-xl font-semibold text-center text-new-pastel-text">เชื่อมต่อกับ Micro:bit</h2>
+                <div class="p-4 bg-new-pastel-card rounded-lg shadow-sm">
+                    <label for="uniqueId" class="block text-sm font-medium text-new-pastel-text">ตั้งค่า ID ให้ตรงกับ Microbit</label>
+                    <input type="text" id="uniqueId" value="microbit-control" placeholder="ใส่ ID เฉพาะที่นี่"
+                        class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-sm focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
+                </div>
+                <button id="connectBtn"
+                    class="w-full bg-gradient-primary text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+                    เชื่อมต่อกับ Broker
+                </button>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status"></div>
+            </section>
+
+            <section id="page-gamepad" class="hidden-page">
+                <h2 class="text-xl font-semibold text-center text-new-pastel-text mb-4">Web Gamepad</h2>
+                <div class="gamepad-container">
+                    <div class="gamepad-inner">
+                        <div class="dpad-container">
+                            <button id="dpad-up" class="dpad-button dpad-up" ontouchstart="publishCommand('gamepad', 'UP_PRESSED', true)" ontouchend="publishCommand('gamepad', 'UP_RELEASED', false)" onmousedown="publishCommand('gamepad', 'UP_PRESSED', true)" onmouseup="publishCommand('gamepad', 'UP_RELEASED', false)">↑</button>
+                            <button id="dpad-left" class="dpad-button dpad-left" ontouchstart="publishCommand('gamepad', 'LEFT_PRESSED', true)" ontouchend="publishCommand('gamepad', 'LEFT_RELEASED', false)" onmousedown="publishCommand('gamepad', 'LEFT_PRESSED', true)" onmouseup="publishCommand('gamepad', 'LEFT_RELEASED', false)">←</button>
+                            <div class="dpad-center"></div>
+                            <button id="dpad-right" class="dpad-button dpad-right" ontouchstart="publishCommand('gamepad', 'RIGHT_PRESSED', true)" ontouchend="publishCommand('gamepad', 'RIGHT_RELEASED', false)" onmousedown="publishCommand('gamepad', 'RIGHT_PRESSED', true)" onmouseup="publishCommand('gamepad', 'RIGHT_RELEASED', false)">→</button>
+                            <button id="dpad-down" class="dpad-button dpad-down" ontouchstart="publishCommand('gamepad', 'DOWN_PRESSED', true)" ontouchend="publishCommand('gamepad', 'DOWN_RELEASED', false)" onmousedown="publishCommand('gamepad', 'DOWN_PRESSED', true)" onmouseup="publishCommand('gamepad', 'DOWN_RELEASED', false)">↓</button>
+                        </div>
+                    
+                        <div class="action-buttons">
+                            <div class="action-row">
+                                <button id="btn-h" class="control-button btn-h" ontouchstart="publishCommand('gamepad', 'H_PRESSED', true)" ontouchend="publishCommand('gamepad', 'H_RELEASED', false)" onmousedown="publishCommand('gamepad', 'H_PRESSED', true)" onmouseup="publishCommand('gamepad', 'H_RELEASED', false)">H</button>
+                                <button id="btn-j" class="control-button btn-j" ontouchstart="publishCommand('gamepad', 'J_PRESSED', true)" ontouchend="publishCommand('gamepad', 'J_RELEASED', false)" onmousedown="publishCommand('gamepad', 'J_PRESSED', true)" onmouseup="publishCommand('gamepad', 'J_RELEASED', false)">J</button>
+                            </div>
+                            <div class="action-row">
+                                <button id="btn-k" class="control-button btn-k" ontouchstart="publishCommand('gamepad', 'K_PRESSED', true)" ontouchend="publishCommand('gamepad', 'K_RELEASED', false)" onmousedown="publishCommand('gamepad', 'K_PRESSED', true)" onmouseup="publishCommand('gamepad', 'K_RELEASED', false)">K</button>
+                                <button id="btn-l" class="control-button btn-l" ontouchstart="publishCommand('gamepad', 'L_PRESSED', true)" ontouchend="publishCommand('gamepad', 'L_RELEASED', false)" onmousedown="publishCommand('gamepad', 'L_PRESSED', true)" onmouseup="publishCommand('gamepad', 'L_RELEASED', false)">L</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-gamepad"></div>
+            </section>
+
+            <section id="page-pins" class="hidden-page space-y-4">
+                <h2 class="text-xl font-semibold text-new-pastel-text">Pin Control</h2>
+                <p class="text-gray-500 text-sm">
+                    ใช้สวิตช์สำหรับ Digital Pins (เปิด/ปิด)
+                </p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="pin-control-container">
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 0</span>
+                        <div id="status-P0" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P0" class="pin-control-toggle" onchange="handleToggleChange('P0', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 1</span>
+                        <div id="status-P1" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P1" class="pin-control-toggle" onchange="handleToggleChange('P1', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 2</span>
+                        <div id="status-P2" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P2" class="pin-control-toggle" onchange="handleToggleChange('P2', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 8</span>
+                        <div id="status-P8" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P8" class="pin-control-toggle" onchange="handleToggleChange('P8', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 12</span>
+                        <div id="status-P12" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P12" class="pin-control-toggle" onchange="handleToggleChange('P12', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 13</span>
+                        <div id="status-P13" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P13" class="pin-control-toggle" onchange="handleToggleChange('P13', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 14</span>
+                        <div id="status-P14" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P14" class="pin-control-toggle" onchange="handleToggleChange('P14', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 15</span>
+                        <div id="status-P15" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P15" class="pin-control-toggle" onchange="handleToggleChange('P15', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 16</span>
+                        <div id="status-P16" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="toggle-P16" class="pin-control-toggle" onchange="handleToggleChange('P16', this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pins"></div>
+            </section>
+            
+            <section id="page-pin-status" class="hidden-page">
+                <h2 class="text-xl font-semibold text-center text-new-pastel-text mb-4">สถานะ Pin ของ Micro:bit</h2>
+              
+                <div class="mt-8 text-center">
+                    <button id="requestPinStatusBtn"
+                        class="bg-new-pastel-accent-2 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+                        ขอข้อมูลสถานะ Pin
+                    </button>
+                </div>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pin-status"></div>
+                <div id="pin-status-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    </div>
+                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pin-status"></div>
+                
+            </section>
+            <section id="page-message" class="hidden-page">
+                
+               
+                
+                            <div class="p-4 rounded-lg shadow-none bg-new-pastel-card">
+                                    <h2 class="text-2xl font-bold mb-4 text-new-pastel-text">รับส่งข้อมูล</h2>
+                                    <div class="flex flex-col sm:flex-row items-center justify-between mb-4 space-y-2 sm:space-y-0">
+                                        <button id="show-shortcuts-btn" class="bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 w-full sm:w-auto">
+                                            Shortcut
+                                        </button>
+                                        <div class="relative w-full sm:w-auto"> 
+                                            <label for="presetNameInput" class="sr-only">ชื่อชุดข้อความ (Preset Name)</label>
+                                            <input type="text" id="presetNameInput" placeholder="ตั้งชื่อ Preset" class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-8 p-4 rounded-lg shadow-none bg-new-pastel-card">
+                                        <div class="flex justify-between items-center mb-4">
+                                            <h3 class="text-lg font-bold text-new-pastel-text">Message Log</h3>
+                                            <button id="clearLogBtn" class="bg-red-500 text-white font-bold py-1 px-3 rounded-lg text-sm shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                                Clear
+                                            </button>
+                                        </div>
+                                        <div id="message-log-container" class="bg-white p-4 rounded-md h-64 overflow-y-scroll text-sm font-mono text-new-pastel-text border border-new-pastel-accent-3">
+                                            </div>
+                                    </div>
+
+                                    <div id="message-list-container" class="space-y-4">
+                                    </div>
+
+                                    <div class="flex items-center space-x-2 mt-4">
+                                        <button id="addMessageBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                            + Add Message
+                                        </button>
+                                        <button id="saveMessagesBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                            Save
+                                        </button>
+                                        
+                                       
+                                    </div>
+
+                                    <div class="mt-8">
+                                        <label for="presetSelector" class="block text-sm font-medium text-new-pastel-text">Preset</label>
+                                        <div class="flex items-center mt-1 space-x-2">
+                                            <select id="presetSelector" class="block w-full rounded-md border-gray-300 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
+                                            </select>
+                                            <button id="loadPresetBtn" class="bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                                Load
+                                            </button>
+                                            <button id="deletePresetBtn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-8">
+                                        <h3 class="text-lg font-bold mb-2 text-new-pastel-text">Export/Import</h3>
+                                        <textarea id="shareDataTextarea" rows="4" class="block w-full rounded-md border-gray-300 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text" placeholder="วางข้อมูล preset ที่นี่เพื่อนำเข้า"></textarea>
+                                        <div class="flex items-center space-x-2 mt-2">
+                                            <button id="exportBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                                Export
+                                            </button>
+                                            <button id="importBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                                Import
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                              
+                                
+                               
+                        </section>
+
+            <section id="page-shortcuts" class="hidden-page">
+                <div class="p-4 rounded-lg shadow-sm bg-new-pastel-card">
+                    <h2 class="text-2xl font-bold mb-6 text-new-pastel-text">Shortcut</h2>
+                    <div id="shortcut-buttons-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    </div>
+
+                    <div class="mt-8 p-4 rounded-lg shadow-none bg-new-pastel-card">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-bold text-new-pastel-text">Message Log</h3>
+                            <button id="clearLogBtn-shortcut" class="bg-red-500 text-white font-bold py-1 px-3 rounded-lg text-sm shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                                Clear
+                            </button>
+                        </div>
+                        <div id="message-log-container-shortcut" class="bg-white p-4 rounded-md h-48 overflow-y-scroll text-sm font-mono text-new-pastel-text border border-new-pastel-accent-3">
+                        </div>
+                    </div>
+
+                    <button id="back-to-message-btn" class="mt-8 bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+                        Back
+                    </button>
+                </div>
+            </section>
+
+           <section id="page-voice" class="hidden-page space-y-8 text-center">
+    <h2 class="text-xl font-semibold text-new-pastel-text">Voice Command</h2>
+    <div class="p-6 bg-new-pastel-card rounded-xl shadow-lg flex flex-col items-center space-y-6">
+        <button id="voice-record-btn" class="w-24 h-24 rounded-full bg-new-pastel-accent-1 text-white font-bold text-lg shadow-xl transition duration-300 ease-in-out hover:bg-new-pastel-accent-2 flex items-center justify-center transform active:scale-95"
+            ontouchstart="startVoiceRecognition()" ontouchend="stopVoiceRecognition()" 
+            onmousedown="startVoiceRecognition()" onmouseup="stopVoiceRecognition()">
+            <svg id="mic-icon" class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7 4a3 3 0 00-3 3v2a3 3 0 003 3h6a3 3 0 003-3V7a3 3 0 00-3-3H7zM5 7a1 1 0 011-1h8a1 1 0 011 1v2a1 1 0 01-1 1H6a1 1 0 01-1-1V7zm5 8a5 5 0 00-5 5h10a5 5 0 00-5-5z" clip-rule="evenodd"></path>
+            </svg>
+        </button>
+        <p id="voice-status-text" class="text-lg font-medium text-new-pastel-text">กดค้างเพื่อพูด</p>
+        
+        <div class="w-full hidden">
+            <label class="block text-sm font-medium text-new-pastel-text mb-1 text-left">ข้อความที่แปลงได้:</label>
+            <div id="transcript-text" class="w-full min-h-12 p-3 bg-white border border-new-pastel-accent-3 rounded-md text-new-pastel-text text-left break-words">...</div>
+        </div>
+        
+        <div class="w-full hidden">
+            <label class="block text-sm font-medium text-new-pastel-text mb-1 text-left">คำสั่ง MQTT ที่ส่ง:</label>
+            <div id="mqtt-command-sent" class="w-full min-h-8 p-3 bg-white border border-new-pastel-accent-3 rounded-md text-new-pastel-accent-1 font-mono text-left">---</div>
+        </div>
+    </div>
+    
+    <div class="font-medium text-new-pastel-text text-center mt-4 **hidden**" id="page-status-voice"></div>
+</section>
+
+        </div>
+    </div>
+
+    <div id="messageModal" class="modal ">
+        <div class="modal-content">
+            <h3 id="modalTitle" class="text-lg font-bold text-new-pastel-text mb-2"></h3>
+            <p id="modalMessage" class="text-new-pastel-text mb-4"></p>
+            <button id="modalCloseBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+                ปิด
+            </button>
+        </div>
+    </div>
+
+    <script>
+
+        let recognition;
+let finalTranscript = '';
+let isRecording = false;
+
+// Func// เพิ่มฟังก์ชันนี้ที่ไหนก็ได้ในแท็ก <script> ของคุณ
+function preventSelection(event) {
+    // ป้องกันพฤติกรรมเริ่มต้นของเบราว์เซอร์ เช่น การเลือกข้อความ
+    event.preventDefault(); 
+    // หยุด Event ไม่ให้แพร่กระจายไป
+    event.stopPropagation();
+}
+function handleVoiceCommand(transcript) {
+    const lowerTranscript = transcript.toLowerCase().trim();
+    let commandToSend = "";
+    
+
+    // Keywords for 'on' - คำสั่งเปิด (รวมคำใกล้เคียงมากกว่า 200 คำ)
+                    const onKeywords = [
+                        // คำสั่งหลักและคำที่เคยเพี้ยนมาก่อน (96 คำ)
+                        "ปูปะเติด", "เปิดประตู", "เปิดปะดู", "ปรูปะเติด", "ปูประเสิรฐ", "ปูประเสริฐ",
+                        "เปิดผู้ตู", "กูเปิด", "เปิดกระโปรง", "เปิดระตู", "ปูประติษฐ์",
+                        "เปิดผัด", "เปิดปัด", "เปิดปาด", "ปูเปิด", "กูเปิดประตู",
+                        "เบิกประตู", "เปิ้ดประตู", "เปิดตู้", "เปิดปะติ", "โปเป็ด", "ปูเป็ด", "เปิดผัด",
+                        "ปุ๊ปเปิด", "ปุ๊ปปะติ", "ปูป้าเติด", "ปู่ปะเติด", "ประตูเปิด", "เปิดปุ๊ป",
+                        "เปิดตะตู", "เปิดจะตู", "เปิดปะตู", "ปูเปิดตัว", "เปิดตัว", "เฝ้าประตู",
+                        "เปิดประทุน", "เปิดปะทุ", "เบิ้ดประตู", "เปิดเปิด", "เปิดแป๊บ", "เป็ดเปิด",
+                        "ปูปะเถิด", "เปิดสตู", "เปิดปูตู", "เปิดหูตู", "เปิดตุ๊", "ปูตู่", "เปิดปลด",
+                        "เปิดปลดล็อก", "เปิดแล้ว", "เปิดเลย", "ประตูเปิดเลย", "เปิดตูด", "ปู้ปะเติด",
+                        "เปิดพระ", "เปิดฟ้า", "เปิดผ้า", "เปิดภาพ", "เปิดพัด", "เปิดบัด", "เปิดบาท",
+                        "เปิดผา", "เบิกพับ", "เปิดคับ", "เบิกคับ", "เบิดคับ", "เปิดกู", "เปิดปู",
+                        "เบิกปู่", "เปิดปลด", "เปิดปะโด", "เปิดปะตี", "กูเปิ้ด", "ปู้เป็ด", "เปิดโต้",
+                         , "ครูประเสริฐ","โชว์ประเสริฐ",
+                        "ปุ๊ปเปิดประตู", "ปู่ประตู่", "ผู้ประเสริฐ", "ปู่ประเสริฐ", "ปูประเสิด",
+                        "ปูประเดิด", "ปุ๊ปปะเถิด", "ปู่ปะถิด", "ผู้ปะเติด", "พูปะเติด", "บุปะเติด",
+                        "เปิดโปรด", "เปิดปวด", "เปิดปุด", "เปิดพุธ", "เปิดพร", "เปิดปวด",
+                        "โป๊ปปะเติด", "ปู๋ปะเติด", "เปิดปะติ", "ปูปะถิ", "เปิดประเสริฐ", "เปิดผู้ประเสริฐ",
+                        "ปุ๊ปะติ๊ด", "ปู่ปะติ๊ด", "เปิดตึก", "เปิดตูด", "ปู่ปะเสิรฐ์", "ผู้ประเสิรฐ์",
+                        "เปิ้ดประตู่", "เปิดบัดดี้", "เปิดปัดดี้", "ปู้ปะติ๊ด", "ปูปะตู้ด", "ปู่ปะตู้ด",
+                        "ปูปะเสร็จ", "ปู่ปะเสร็จ", "เปิดตระกูล", "เปิดจะกร", "เปิดจะตู้", "เปิดปุ๊บปั๊บ",
+                        "เปิดปั๊บปั๊บ", "ปูปะเสิบ", "ปูปะเสพ", "เปิดพูตู", "เปิดบะตู", "เปิดปะตรู",
+                        "เปิดไปเลย",  "เปิดไปได้", "เปิดไปนะ", "ปูปะเถิด", "ปูประติส",
+                        "ผู้ประดิษ", "ปู่ประดิษฐ์", "เปิดปู่", "เปิดปู่ปะ", "เปิดพูด", "เปิดพูดดี",
+                        "เบิดพู่ตู่", "เปิ้ดพู่ตู่", "ปู้ปะเสิด", "เปิดปะดูด", "ปูปะทิต", "ปูประทิต",
+                        
+                        // NEW: คำที่พยางค์หน้าหาย หรือพยางค์หลังหาย/เพี้ยนรุนแรง (100+ คำ)
+                        "ปะเติด", "ปะติ", "ปะดู", "ประเสิรฐ", "ประเสริฐ", "ประติษฐ์", "ปะถิด", "ปะเถิด",
+                        "พะเติด", "พะติด", "พระเสริฐ", "พะดู", "ปะตุ", "ปะทุ", "ปะโด", "ปะตี",
+                        "เติด", "เถิด", "เสริฐ", "เสิรฐ", "ติษฐ์", "ถิด", "ตู้", "ตู", "ถู่", "เต้ด",
+                        "ปูเติด", "ปูถิด", "ปูเสริฐ", "ปูเสิรฐ", "ปูติษฐ์", "ปู่เติด", "ปู่ถิด", "ปู่เสริฐ",
+                        "ปู่เสิรฐ", "ผู้เติด", "ผู้ถิด", "ผู้เสริฐ", "ผู้เสิรฐ", "พูดดี", "พูดเปิด", "พูตู้",
+                        "ปะเปิด", "ปะปลด", "ปะไฟ", "ปะเลย", "ปะได้", "ปะนะ", "ปะตาด", "ปะถาด",
+                        "ประเติด", "ประถิด", "ประเสริฐ", "ประเสิรฐ", "ประติษฐ์", "ประถิต", "ปุ๊ปเสริฐ",
+                        "ปุ๊ปเติด", "ปุ๊บเสริฐ", "ปุ๊บเติด", "ปุ๊ปถิด", "ปุ๊บถิด", "ปู่เปิด", "ปู่ปลด",
+                        "ผู้เปิด", "ผู้ปลด", "พูปิด", "พูดเปิด", "พูดปลด", "พูดไฟ", "เปิดเปิด",
+                        "เปิดปะ", "เปิดปู่", "เปิดผู้", "เปิดพูด", "เปิดเพด", "เปิดเพิด", "เบิ้ดปะ",
+                        "เปิดพัดลม", "เปิดพัด", "เปิดหม้อ", "เปิดถัง", "เปิดห้อง", "เปิดรถ", "เปิดพัด",
+                        "เปิดพับ", "เปิดพบ", "เปิดภาพ", "เปิดบาน", "เปิดบ้าน", "เปิดปาน", "เปิดป่าน",
+                        "เปิดปล้ำ", "เปิดหลอด", "เปิดหลอดไฟ", "เปิดระบบ", "เปิดประตูได้", "เปิดทันที",
+                        "เปิดสิ", "เปิดหน่อย", "เปิดให้หน่อย", "ปูปะ", "ปู่ปะ", "ผู้ปะ", "พูปะ",
+                        "ปะเปิด", "ปะปลด", "ปะไฟ", "ปะเลย", "ปะได้", "ปะนะ", "ปะตาด", "ปะถาด",
+                        "เบิ้ดปะ", "เบิดปะ", "เปิ้ดปะ", "เปิดปะ", "ปะเปิด", "ปะปลด", "ปะไฟ",
+                        "เปิดได้ไหม", "เปิดได้มั้ย", "เปิดซิ", "เปิดฉิ"
+                    ];
+                    
+                    // Keywords for 'off' - คำสั่งปิด (รวมคำใกล้เคียงมากกว่า 200 คำ)
+                    const offKeywords = [
+                        // คำสั่งหลักและคำที่เคยเพี้ยนมาก่อน (96 คำ)
+                        "ปิดประตู", "ปิดปะตู", "ปูปะติด", "ปรูประติด", "ปูประติด",
+                        "ปูประดิษฐ์", "ผู้ประดิษฐ์", "กูปิด", "ครูประดิษฐ์", "ปิดกระโปรง", "ปิดระตู",
+                        "ปิดผัด", "ปิดปัด", "ปิดปาด", "ปูปิด", "กูปิดประตู",
+                        "ปิดปุ๊บ", "ปิดปะติ", "ปิดตู้", "ปุ๊ปปิด", "ปู๊ปปิด", "ปิดประทุน", "ปิดประติ",
+                        "ประตูปิด", "ปิดปั๊บ", "ปิดเดี๋ยวนี้", "ปิดแล้ว", "ปิดเลย", "ปิดตะตู",
+                        "ปิดจะตู", "ปู่ปะติ", "ปิดปัด", "ปู๊ปปะติด", "ปู้ปิด", "ปู้ปะติด", "ปิดผิด",
+                        "ปิดเพด", "บิดประตู", "บิดปะตู", "ปิดปูตู่", "ปุ๊บปิด", "ปู๊ปปิด", "ปิดป๊าด",
+                        "ปิดปุ๊บปั๊บ", "ปิดประตูได้", "ปิดสตู", "ปิดประตูนะ", "ปิดป๊าติ", "ปิดโป๊",
+                        "ปิดตูด", "ปูปะถิด", "ปู้ปะถิด", "ปิดผ้า", "ปิดภาพ", "ปิดพัด", "ปิดบัด",
+                        "ปิดบาท", "ปิดผา", "บิดพับ", "ปิดคับ", "บิดคับ", "ปิดกู", "ปิดปู", "บิดปู่",
+                        "ปิดปลด", "ปิดปะโด", "ปิดปะตี", "กูปิ๊ด", "ปู้ปิ๊ด", "ปิดโต้", 
+                       
+                        "ปุ๊ปปิดประตู", "ปู่ประติด", "ผู้ประดิษฐ์", "ปู่ประดิษฐ์", "ปูประติด",
+                        "ปูประดิบ", "ปุ๊ปปะถิด", "ปู่ปะถิด", "ผู้ปะติด", "พูปะติด", "บุปะติด",
+                        "ปิดโปรด", "ปิดปวด", "ปิดปุด", "ปิดพุธ", "ปิดพร", "ปิดปวด",
+                        "โป๊ปปะติด", "ปู๋ปะติด", "ปิดปะติ", "ปูปะถิ", "ปิดประดิษฐ์", "ปิดผู้ประดิษฐ์",
+                        "ปุ๊ปะติ๊ด", "ปู่ปะติ๊ด", "ปิดตึก", "ปิดตูด", "ปู่ปะเสร็จ", "ผู้ประเสร็จ",
+                        "ปิ๊ดประตู่", "ปิดบัดดี้", "ปิดปัดดี้", "ปู้ปะติ๊ด", "ปูปะตู้ด", "ปู่ปะตู้ด",
+                        "ปูปะเสร็จ", "ปู่ปะเสร็จ", "ปิดตระกูล", "ปิดจะกร", "ปิดจะตู้", "ปิดปุ๊บปั๊บ",
+                        "ปิดปั๊บปั๊บ", "ปูปะเสิบ", "ปูปะเสพ", "ปิดพูตู", "ปิดบะตู", "ปิดปะตรู",
+                        "ปิดไปเลย", , "ปิดไปได้", "ปิดไปนะ", "ปูปะถิด", "ปูประติส",
+                        "ผู้ประดิษ", "ปู่ประดิษฐ์", "ปิดปู่", "ปิดปู่ปะ", "ปิดพูด", "ปิดพูดดี",
+                        "บิดพู่ตู่", "ปิ้ดพู่ตู่", "ปู้ปะเสิด", "ปิดปะดูด", "ปูปะทิต", "ปูประทิต",
+
+                        // NEW: คำที่พยางค์หน้าหาย หรือพยางค์หลังหาย/เพี้ยนรุนแรง (100+ คำ)
+                        "ปะติด", "ปะติ", "ปะตู", "ประดิษฐ์", "ประดิษ", "ประดิบ", "ปะถิด", "ปะถิ",
+                        "พะติด", "พะเติด", "พระดิษฐ์", "พะตู", "ปะตุ", "ปะทุ", "ปะโด", "ปะตี",
+                        "ติด", "ถิด", "ดิษฐ์", "ดิษ", "ดิบ", "ตู้", "ตู", "ถู่", "เต็ด",
+                        "ปูปิด", "ปูถิด", "ปูดิษฐ์", "ปูดิษ", "ปูติส", "ปู่ปิด", "ปู่ถิด", "ปู่ดิษฐ์",
+                        "ปู่ดิษ", "ผู้ปิด", "ผู้ถิด", "ผู้ดิษฐ์", "ผู้ดิษ", "พูดดี", "พูดปิด", "พูตู้",
+                        "ปะปิด", "ปะปลด", "ปะไฟ", "ปะเลย", "ปะได้", "ปะนะ", "ปะตาด", "ปะถาด",
+                        "ประติด", "ประถิด", "ประดิษฐ์", "ประดิษ", "ประดิบ", "ประถิต", "ปุ๊ปดิษฐ์",
+                        "ปุ๊ปติด", "ปุ๊บดิษฐ์", "ปุ๊บติด", "ปุ๊ปถิด", "ปุ๊บถิด", "ปู่ปิด", "ปู่ปลด",
+                        "ผู้ปิด", "ผู้ปลด", "พูปิด", "พูดปิด", "พูดปลด", "พูดไฟ", "ปิดปิด",
+                        "ปิดปะ", "ปิดปู่", "ปิดผู้", "ปิดพูด", "ปิดเพด", "ปิดเพิด", "บิ้ดปะ",
+                        "ปิดพัดลม", "ปิดพัด", "ปิดหม้อ", "ปิดถัง", "ปิดห้อง", "ปิดรถ", "ปิดพัด",
+                        "ปิดพับ", "ปิดพบ", "ปิดภาพ", "ปิดบาน", "ปิดบ้าน", "ปิดปาน", "ปิดป่าน",
+                        "ปิดปล้ำ", "ปิดหลอด", "ปิดหลอดไฟ", "ปิดระบบ", "ปิดประตูได้", "ปิดทันที",
+                        "ปิดสิ", "ปิดหน่อย", "ปิดให้หน่อย", "ปูปะ", "ปู่ปะ", "ผู้ปะ", "พูปะ",
+                        "ปะปิด", "ปะปลด", "ปะไฟ", "ปะเลย", "ปะได้", "ปะนะ", "ปะตาด", "ปะถาด",
+                        "บิ้ดปะ", "บิดปะ", "ปิ้ดปะ", "ปิดปะ", "ปะปิด", "ปะปลด", "ปะไฟ",
+                        "ปิดได้ไหม", "ปิดได้มั้ย", "ปิดซิ", "ปิดฉิ"
+                    ];
+
+                    const lamponKeywords = [
+    // 1. คำตรงและใกล้เคียง
+    "เปิดไฟบ้าน", "เปิดไปบ้าน", "เปิดไฟบาน", "เปิดไฟบ้า", "เปีดไฟบ้าน", "เปิดในบ้าน", "เปิดไอ้บ้าน",
+    
+    // 2. คำผวนและผวนเพี้ยน (ป้านไฟเดิด, บ้านไฟเปิด)
+    "ป้านไฟเดิด", "บ้านไฟเดิด", "เบิดไฟบ้าน", "บ้านไฟเปิด", "ไฟบ้านเปิด", "เบิดไฟบ่าน", "ป้านไฟเด้ด", 
+    "ป้ายไฟเดิด", "เดิดไฟบ้าน", "เดิดไฟบาน", "ปาดไฟเดิด", "ป้านไฟดาด", "บ้านไฟเดิด", "เปิดไฟเดิด", 
+    , "ป้านไปเบิด", "ป้านไปเบิน", "ป้านไปเกิน", "ป้านไปเกิด", 
+    // 3. คำเพี้ยนพยัญชนะ (บ/ป, ด/ท, ฟ/พ, ร/ล)
+    "เบิดไฟบ้าน", "เป็ดไฟบ้าน", "เบิดไดบ้าน", "เป็ดไดบ้าน", "เถิดไฟบ้าน", "เลิดไฟบ้าน", "ไปรไฟบ้าน", 
+    "เปิดใยบ้าน", "เฝิดไฟบ้าน", "เบิดไปบ้าน", "เบิดไฟบ้า", "เปิดไดบาน", "เป็ดไปบ้า", "เบิดไปบ้า", 
+    "เบิดไฟบ่าง", "เบิดไฟบ่าน", "เปิดไฟบา", "เบิดไฟบา", "เบิดไปบาน", "เป็ดไปบาน", "เบิดไฟบ้าน", 
+    "เบิ้ดไฟบ้าน", "ปิ๊ดไฟบ้าน", "เปริดไฟบ้าน", "เลิ่ดไฟบ้าน", "เริ่ดไฟบ้าน", "เปิดไฟบ้า", "เปิดไปบ่าง", 
+    "เบิ่ดไฟบ้า", "เบิดไปบ่าง", "เบิ้ดไปบ้าน", "เปิ้ดไฟบ้าน", "เปิ๊ดไฟบ้าน", "เปิดไฟบ้าง", "เปิดไปบ้าง", 
+    "เบิดไฟบ้าง", "เป็ดไฟบ้าง", "เถิดไฟบ้าง", "เลิดไฟบ้าง", "ไปรไฟบ้าง", "เปิดไฟบาง", "เป็ดไฟบาง",
+    
+    // 4. คำสั้น 2-3 พยางค์ (ลดทอนพยางค์)
+    "เปิดไฟ", "ไปเปิดไฟ", "ไปบ้าน", "บ้านเปิด", "เปิด", "เบิดไฟ", "ไปเบิดไฟ", 
+    "เปิดไฟนะ", "เปิดไฟสิ", "เปิดไปเลย", "เปิดไฟเร็ว", "เบิดไฟนะ", "เบิดไฟสิ", "ไปเบิดเลย",
+    
+    // 5. การสลับคำและวรรณยุกต์เพิ่มเติม (เพื่อให้ครบ 200 คำ)
+    "ป้านไฟดาต", "เบิดฟายบาน", "ป้านไฟเดิ้ด", "บ้านไฟเปิ่ด", "เฝิดใยบ้าน", "เปริดไดบ้าน", 
+    "เลิ้ดไปบ้า", "เบิ้ดไฟบ่าง", "เปิดไพบ้าน", "เปิดไฟบ้านหน่อย", "เปิดไฟบ้างนะ", "เปิดไฟสิคะ",
+    "เบิดไฟบ้านเลย", "เบิดไฟที", "เปิดไฟบ้าน", "เปิดไฟบ้างสิ", "เปิดไปบาน", "เปิดไปบ้าง", 
+    "เบิดไฟบ้าง", "เบิดไปบาน", "เปิดบาน", "เปิดบ้า", "เปิบไฟบ้าน", "เปิบไปบ้าน", "เบิบไฟบ้าน",
+    "เถิบไฟบ้าน", "เปิดไดบ้าน", "เปิดใยบ้าน", "เบิดใยบ้าน", "เบิดไอ้บ้าน", "เถิดไอ้บ้าน", "เฝิดไอ้บ้าน",
+    "ไปรไอ้บ้าน", "เปริดไอ้บ้าน", "เปิดไพ", "เบิดไพ", "เปิดไพนะ", "เบิดไพสิ",  
+    "เบิดบ้านนะ",  "เบิดบ้านสิ", "เปิดไฟป้าน", "เบิดไฟป้าน", "เปิดไฟปีน", "เบิดไฟปีน",
+    "เปิดใยป้าน", "เบิดใยป้าน", "เปิดบ้านไพ", "เบิดบ้านไพ", "เปิ่ดไฟบ้าน", "เปิ่ดไปบ้าน", 
+    "เบิ่ดไฟบ้าน", "เบิ่ดไปบ้าน", "เปิ๊ดไฟบ้าน", "เปิ๊ดไปบ้าน", "เบิ๊ดไฟบ้าน", "เบิ๊ดไปบ้าน",
+    "ป้านไฟเดิ่ด", "ป้านไฟเดิ๊ด", "ป้านไปเดิด", "ป้านไปเดิ่ด", "ป้านไปเดิ๊ด", "บ้านไปเดิด", 
+    "บ้านไปเดิ่ด", "บ้านไปเดิ๊ด", "ไฟเบิดบ้าน", "ไฟเป็ดบ้าน", "ไปเปิด", "ไปเบิด", "ไฟเปิด", "ไฟเบิด",
+    "เบิ่ดไฟ", "เบิ๊ดไฟ", "เปิ่ดไฟ", "เปิ๊ดไฟ", "บ้านไฟ", "บานไฟ", "เบานไฟ", "เบิ้ลไฟ",
+    "เปิด", "เบิด", "เปิ่ด", "เบิ่ด", "เปิ๊ด", "เบิ๊ด", "เปิดนะ", "เบิดนะ", "เปิดสิ", "เบิดสิ",
+   , "เบิดบ้านหน่อย", "ไปเปิดไฟหน่อย", "ไปเบิดไฟหน่อย", "เปิดไฟบา", "เบิดไฟบา",
+    "เปิดไฟมา", "เบิดไฟมา", "เปิดไฟแล้ว", "เบิดไฟแล้ว", "เปิดไฟล่ะ", "เบิดไฟล่ะ", "เปิดไฟดี",
+    "เบิดไฟดี", "เปิดไฟบ่อย", "เบิดไฟบ่อย", "เปิดไฟเยอะ", "เบิดไฟเยอะ", "เปิดไฟบ้างสิ", "เบิดไฟบ้างสิ",
+    "เปิดให้หน่อย", "เบิดให้หน่อย", "เปิดไฟให้", "เบิดไฟให้", "เปิดไปให้", "เบิดไปให้"
+];
+                    const lampoffKeywords = [
+    // 1. คำตรงและใกล้เคียง
+    "ปิดไฟบ้าน", "ปิ๊ดไฟบ้าน", "ปิดไปบ้าน", "ปิดไฟบาน", "ปิดไฟบ้า", "ปิดในบ้าน", "ปิดไอ้บ้าน", 
+    
+    // 2. คำผวนและผวนเพี้ยน (ป้านไฟดิด, บ้านไฟปิด)
+    "ป้านไฟดิด", "บ้านไฟดิด", "บิดไฟบ้าน", "บ้านไฟปิด", "ไฟบ้านปิด", "บิดไฟบ่าน", "ป้านไฟติ๊ด", "ป้านไฟบิด","บ้านไฟบิด","บ้านไฟปิด","บ้านไฟดิด","บ้านไฟดิษฐ์",
+    "ป้ายไฟดิด", "ดิดไฟบ้าน", "ดิดไฟบาน", "ปาดไฟดิด", "ป้านไฟดาด", "บ้านไฟดิด", "บิดไฟดิด","บ้านไฟดับ","บ้านไปดิษฐ์","ป้านไฟดิษฐ์",
+    
+    // 3. คำเพี้ยนพยัญชนะ (บ/ป, ด/ท, ฟ/พ, ร/ล)
+    "บิดไฟบ้าน", "พิษไฟบ้าน", "บิดไดบ้าน", "พิษไดบ้าน", "ถิดไฟบ้าน", "ลิดไฟบ้าน", "ไปรไฟบ้าน",
+    "ปิดใยบ้าน", "ผิดไฟบ้าน", "บิดไปบ้าน", "บิดไฟบ้า", "ปิดไดบาน", "พิษไปบ้า", "บิดไปบ้า",
+    "บิดไฟบ่าง", "บิดไฟบ่าน", "ปิดไฟบา", "บิดไฟบา", "บิดไปบาน", "พิษไปบาน", "บิดไฟบ้าน",
+    "บิ้ดไฟบ้าน", "ปิ๊ดไฟบ้าน", "ปลิดไฟบ้าน", "ลิ่ดไฟบ้าน", "ริ่ดไฟบ้าน", "บิดไฟบ้า", "ปิดไปบ่าง",
+    "บิ่ดไฟบ้า", "บิดไปบ่าง", "บิ้ดไปบ้าน", "ปิ้ดไฟบ้าน", "ปิ๊ดไฟบ้าน", "ปิดไฟบ้าง", "ปิดไปบ้าง",
+    "บิดไฟบ้าง", "พิษไฟบ้าง", "ถิดไฟบ้าง", "ลิดไฟบ้าง", "ไปรไฟบ้าง", "ปิดไฟบาง", "พิษไฟบาง",
+    
+    // 4. คำสั้น 2-3 พยางค์ (ลดทอนพยางค์)
+    "ปิดไฟ", "ไปปิดไฟ",  "ไปบ้าน", "บ้านปิด", "ปิด", "บิดไฟ", "ไปบิดไฟ", 
+    "ปิดไฟนะ", "ปิดไฟสิ", "ปิดไปเลย", "ปิดไฟเร็ว", "บิดไฟนะ", "บิดไฟสิ", "ไปบิดเลย",
+    
+    // 5. การสลับคำและวรรณยุกต์เพิ่มเติม (เพื่อให้ครบ 200 คำ)
+    "ป้านไฟดาต", "บิดฟายบาน", "ป้านไฟดิ๊ด", "บ้านไฟปิ่ด", "ผิดใยบ้าน", "ปลิดไดบ้าน", 
+    "ลิ้ดไปบ้า", "บิ้ดไฟบ่าง", "ปิดไพบ้าน", "ปิดไฟบ้านหน่อย", "ปิดไฟบ้างนะ", "ปิดไฟสิคะ",
+    "บิดไฟบ้านเลย", "บิดไฟที", "พิษไฟบ้าน", "ปิดไฟบ้างสิ", "ปิดไปบาน", "ปิดไปบ้าง", 
+    "บิดไฟบ้าง", "บิดไปบาน", "ปิดบาน", "ปิดบ้า", "ปิบไฟบ้าน", "ปิบไปบ้าน", "บิบไฟบ้าน",
+    "ถิบไฟบ้าน", "พิษไดบ้าน", "พิษใยบ้าน", "บิดใยบ้าน", "บิดไอ้บ้าน", "ถิดไอ้บ้าน", "ผิดไอ้บ้าน",
+    "ไปรไอ้บ้าน", "ปลิดไอ้บ้าน", "ปิดไพ", "บิดไพ", "ปิดไพนะ", "บิดไพสิ",  
+    "บิดบ้านนะ",  "บิดบ้านสิ", "ปิดไฟป้าน", "บิดไฟป้าน", "ปิดไฟปีน", "บิดไฟปีน",
+    "ปิดใยป้าน", "บิดใยป้าน",  "บิดบ้านไพ", "ปิ่ดไฟบ้าน", "ปิ่ดไปบ้าน", 
+    "บิ่ดไฟบ้าน", "บิ่ดไปบ้าน", "ปิ๊ดไฟบ้าน", "ปิ๊ดไปบ้าน", "บิ๊ดไฟบ้าน", "บิ๊ดไปบ้าน",
+    "ป้านไฟดิ่ด", "ป้านไฟดิ๊ด", "ป้านไปดิด", "ป้านไปดิ่ด", "ป้านไปดิ๊ด", "บ้านไปดิด", 
+    "บ้านไปดิ่ด", "บ้านไปดิ๊ด", "ไฟบิดบ้าน", "ไฟพิษบ้าน", "ไปปิด", "ไปบิด", "ไฟปิด", "ไฟบิด",
+    "บิ่ดไฟ", "บิ๊ดไฟ", "ปิ่ดไฟ", "ปิ๊ดไฟ", "บ้านไฟ", "บานไฟ", "เบานไฟ", "บิ้ลไฟ",
+    "ปิด", "บิด", "ปิ่ด", "บิ่ด", "ปิ๊ด", "บิ๊ด", "ปิดนะ", "บิดนะ", "ปิดสิ", "บิดสิ",
+     "บิดบ้านหน่อย", "ไปปิดไฟหน่อย", "ไปบิดไฟหน่อย", "ปิดไฟบา", "บิดไฟบา",
+    "ปิดไฟมา", "บิดไฟมา", "ปิดไฟแล้ว", "บิดไฟแล้ว", "ปิดไฟล่ะ", "บิดไฟล่ะ", "ปิดไฟดี",
+    "บิดไฟดี", "ปิดไฟบ่อย", "บิดไฟบ่อย", "ปิดไฟเยอะ", "บิดไฟเยอะ", "ปิดไฟบ้างสิ", "บิดไฟบ้างสิ",
+    "ปิดให้หน่อย", "บิดให้หน่อย", "ปิดไฟให้", "บิดไฟให้", "ปิดไปให้", "บิดไปให้"
+];
+
+    const transcriptElement = document.getElementById('transcript-text');
+    const commandElement = document.getElementById('mqtt-command-sent');
+    
+    // Update UI with the final transcript
+    if (transcriptElement) {
+        transcriptElement.textContent = lowerTranscript;
+    }
+
+    // 1. ตรวจสอบ 'lampon' ก่อน (เปิดไฟ)
+if (lamponKeywords.some(keyword => lowerTranscript === keyword)) {
+    commandToSend = "turnonlamp";
+} 
+// 2. ถ้าไม่ตรงกับ 'lampon' ค่อยตรวจสอบ 'lampoff' (ปิดไฟ)
+else if (lampoffKeywords.some(keyword => lowerTranscript === keyword)) {
+    commandToSend = "turnofflamp";  
+}
+// 3. ตรวจสอบ 'on' keywords
+else if (onKeywords.some(keyword  => lowerTranscript === keyword)) {
+    commandToSend = "opendoor";
+} 
+// 4. ตรวจสอบ 'off' keywords
+else if (offKeywords.some(keyword  => lowerTranscript === keyword)) {
+    commandToSend = "closedoor";
+}
+
+    if (commandToSend) {
+        publishCommand('commands', commandToSend);
+        if (commandElement) {
+            commandElement.textContent = commandToSend;
+        }
+        updatePageStatus(`เรียบร้อย`, "page-voice");
+    } else {
+        if (commandElement) {
+            commandElement.textContent = "---";
+        }
+        updatePageStatus(`ไม่สำเร็จ`, "page-voice");
+    }
+    
+    // Reset status text after processing
+    document.getElementById('voice-status-text').textContent = "กดค้างเพื่อพูด";
+}
+
+// Function to start recording
+window.startVoiceRecognition = function() {
+    // Check for browser support
+    if (!('webkitSpeechRecognition' in window)) {
+        showModal("Voice Command Error", "เบราว์เซอร์ของคุณไม่รองรับ Speech Recognition โปรดใช้ Google Chrome");
+        return;
+    }
+    
+    if (isRecording) return;
+    
+    // Stop any existing recognition instance to ensure a fresh start
+    if (recognition) {
+        recognition.stop();
+    }
+    
+    isRecording = true;
+
+    // Initialize recognition object
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = false; // Capture a single phrase
+    recognition.interimResults = true; // Get real-time results
+    recognition.lang = 'th-TH'; // Set language to Thai for better recognition
+
+    finalTranscript = '';
+    const statusText = document.getElementById('voice-status-text');
+    const recordBtn = document.getElementById('voice-record-btn');
+    const transcriptElement = document.getElementById('transcript-text');
+    
+    // Update UI for recording start
+    if (statusText) statusText.textContent = "กดค้างไว้เพื่อส่งข้อมูล"  ;
+    if (recordBtn) recordBtn.classList.add('bg-action-red', 'animate-pulse');
+    if (transcriptElement) transcriptElement.textContent = '...'; // Clear previous transcript
+
+    const statusDiv = document.getElementById('page-status-voice');
+        if (statusDiv) {
+            statusDiv.classList.remove('hidden'); // *** ทำให้ div แสดงผล ***
+            statusDiv.textContent = `กำลังประมวลผล`; // ใส่ข้อความสถานะ
+        }
+
+    recognition.onstart = () => {
+        console.log("Speech recognition started.");
+    };
+
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript;
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+        // Show interim results with '...' appended to indicate listening
+        if (transcriptElement) {
+             transcriptElement.textContent = finalTranscript + interimTranscript + '...';
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech Recognition Error:', event.error);
+        stopVoiceRecognition(true); // Stop but don't process transcript on error
+        updatePageStatus(`ข้อผิดพลาดในการรับเสียง: ${event.error}`, "page-voice");
+        document.getElementById('voice-status-text').textContent = "กดค้างเพื่อพูด";
+    };
+
+    recognition.onend = () => {
+        if (isRecording) { // If onend is called while still 'recording' (e.g., timeout), process the final transcript
+            stopVoiceRecognition(false);
+        }
+    };
+    
+    recognition.start();
+};
+
+// Function to stop recording and process the command
+window.stopVoiceRecognition = function(isError = false) {
+    if (!isRecording) return;
+    isRecording = false;
+    
+    // Stop the recognition service explicitly
+    if (recognition) {
+        // Disconnect the onend handler temporarily to prevent double processing/UI update if it was triggered by stop()
+        const oldOnEnd = recognition.onend;
+        recognition.onend = null; 
+        recognition.stop();
+        recognition.onend = oldOnEnd; // Restore if needed later, though not strictly required for this simple implementation
+    }
+    
+    const statusText = document.getElementById('voice-status-text');
+    const recordBtn = document.getElementById('voice-record-btn');
+
+    if (statusText) statusText.textContent = "กำลังประมวลผล...";
+    if (recordBtn) recordBtn.classList.remove('bg-action-red', 'animate-pulse');
+    
+    if (!isError && finalTranscript.trim().length > 0) {
+        handleVoiceCommand(finalTranscript);
+    } else if (!isError) {
+        document.getElementById('transcript-text').textContent = 'ไม่พบเสียงพูด';
+        document.getElementById('mqtt-command-sent').textContent = '---';
+        updatePageStatus('ไม่พบเสียงพูด', "page-voice");
+        document.getElementById('voice-status-text').textContent = "กดค้างเพื่อพูด";
+    }
+    
+    if (isError) {
+        document.getElementById('mqtt-command-sent').textContent = '---';
+        document.getElementById('voice-status-text').textContent = "กดค้างเพื่อพูด";
+    }
+};
+// END: เพิ่มโค้ดใหม่สำหรับ Voice Recognition
+
+
+
+            let activeMode = 'none';
+            let isConnected = false;
+
+            // --- MQTT Broker & Client Configuration ---
+            const HOST = 'broker.hivemq.com';
+            const PORT = 8884; // Secure WebSocket Port
+            let client;
+            let uniqueId;
+            
+            // --- Define the pins you want to display for status ---
+            const statusPins = [
+                { id: 'P0', name: 'Pin 0', type: 'analog' },
+                { id: 'P1', name: 'Pin 1', type: 'analog' },
+                { id: 'P2', name: 'Pin 2', type: 'analog' },
+                { id: 'P5', name: 'Pin 5', type: 'digital' },
+                { id: 'P8', name: 'Pin 8', type: 'digital' },
+                { id: 'P9', name: 'Pin 9', type: 'digital' },
+                { id: 'P11', name: 'Pin 11', type: 'digital' },
+                { id: 'P12', name: 'Pin 12', type: 'digital' },
+                { id: 'P13', name: 'Pin 13', type: 'digital' },
+                { id: 'P14', name: 'Pin 14', type: 'digital' },
+                { id: 'P15', name: 'Pin 15', type: 'digital' },
+                { id: 'P16', name: 'Pin 16', type: 'digital' }
+            ];
+            
+            // เพิ่มฟังก์ชันนี้เพื่อจัดการการแสดงผลสถานะวงกลมสีบนหน้า Pin Control
+            // Function to update the pin status circle and card on the Pin Control page
+            function updatePinControlStatus(pinId, value) {
+                // Select the circle element based on the pin ID from the HTML
+                const statusCircle = document.getElementById(`status-${pinId}`);
+
+                // Check if the circle element exists before proceeding
+                if (statusCircle) {
+                    // Remove existing state classes to reset the appearance
+                    statusCircle.classList.remove('low', 'high');
+                    
+                    // Check the value received from the device
+                    if (value === 1) {
+                        // Add the 'high' class for a value of 1 (ON), making the circle green
+                        statusCircle.classList.add('high');
+                    } else if (value === 0) {
+                        // Add the 'low' class for a value of 0 (OFF), making the circle red
+                        statusCircle.classList.add('low');
+                    }
+                }
+            }
+            
+            // เพิ่มฟังก์ชันนี้ลงใน <script> block
+            window.requestPinStatus = function() {
+                if (!isConnected) {
+                   
+                    return;
+                }
+                // Publish a command to request all pin status data
+                publishCommand('commands', 'request_pin_status');
+                updatePageStatus("กำลังร้องขอข้อมูล...", "page-pin-status");
+            }
+
+            // เพิ่ม Event Listener เพื่อผูกฟังก์ชันกับปุ่ม
+            document.addEventListener('DOMContentLoaded', () => {
+                const requestBtn = document.getElementById('requestPinStatusBtn');
+                if (requestBtn) {
+                    requestBtn.addEventListener('click', requestPinStatus);
+                }
+                const voiceRecordBtn = document.getElementById('voice-record-btn');
+    
+    if (voiceRecordBtn) {
+        // ป้องกันการเลือกข้อความ/คัดลอก เมื่อมีการกดปุ่ม
+        
+        // 1. ป้องกันเมนูบริบท (Context Menu) ที่เกิดจากการกดค้าง (สำคัญมากสำหรับมือถือ)
+        voiceRecordBtn.addEventListener('contextmenu', preventSelection); 
+        
+        // 2. ป้องกันพฤติกรรมการเลือกข้อความเมื่อสัมผัสหน้าจอ
+        voiceRecordBtn.addEventListener('touchstart', preventSelection); 
+        
+        // 3. ป้องกันพฤติกรรมการเลือกข้อความเมื่อกดเมาส์ (สำหรับ Desktop/Tablet)
+        voiceRecordBtn.addEventListener('mousedown', preventSelection); 
+    }
+            });
+            
+            // --- Status Display Function ---
+                    function showStatus(message, isError) {
+                        const statusDisplay = document.getElementById('status-display');
+                        if (statusDisplay) {
+                            statusDisplay.textContent = message;
+                            if (isError) {
+                                statusDisplay.style.color = 'red';
+                            } else {
+                                statusDisplay.style.color = 'black';
+                            }
+                        }
+                    }
+            
+            
+
+                    
+                    // --- Event Listener for Page Load ---
+                    window.onload = function() {
+                        if (typeof Paho === 'undefined' || !Paho.MQTT || !Paho.MQTT.Client) {
+                            const connectionStatusText = document.getElementById('connection-status-text');
+                            if (connectionStatusText) {
+                                connectionStatusText.textContent = "Error: Paho script not loaded.";
+                                connectionStatusText.style.color = "red";
+                            }
+                            console.error("Paho MQTT client is not loaded. Check the script link or internet connection.");
+                            return;
+                        }
+                        initializeMQTT();
+                        showPage(null, 'page-connect');
+                        createPinStatusCards();
+                        createMessageInput();
+
+                       
+                    };
+
+
+            // --- Main MQTT Initialization Function ---
+            function initializeMQTT() {
+                const connectBtn = document.getElementById('connectBtn');
+                if (connectBtn) {
+                    connectBtn.addEventListener('click', () => {
+                        uniqueId = document.getElementById('uniqueId').value.trim();
+                        if (!uniqueId) {
+                            updateConnectionStatus("Error: โปรดใส่ ID เฉพาะ", "red");
+                            showModal("ID ไม่ถูกต้อง", "โปรดใส่ ID ที่ตรงกับ Micro:bit ของคุณ");
+                            return;
+                        }
+                        connectMQTT();
+                    });
+                } else {
+                    console.error("Connect button not found.");
+                }
+            }
+                    
+            // Toggles the visibility of the sidebar menu
+            window.toggleSidebar = function() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('open');
+            }
+
+        window.showPage = function(event, pageId) {
+            if (event) {
+                event.preventDefault();
+            }
+
+            // ซ่อนหน้าทั้งหมด
+            const pages = document.querySelectorAll('section[id^="page-"]');
+            pages.forEach(page => {
+                page.classList.add('hidden-page');
+            });
+
+            // แสดงเฉพาะหน้าปัจจุบันที่ถูกเลือก
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.remove('hidden-page');
+                
+                // ส่งคำสั่ง mode ไปยัง Micro:bit ตามหน้า
+                if (pageId === 'page-connect') {
+                    publishCommand('commands', 'mode=1');
+                } else if (pageId === 'page-gamepad') {
+                    publishCommand('commands', 'mode=2');
+                } else if (pageId === 'page-pins') {
+                    publishCommand('commands', 'mode=3');
+                } else if (pageId === 'page-pin-status') {
+                    publishCommand('commands', 'mode=4');
+                } else if (pageId === 'page-message') {
+                    // ส่งคำสั่ง mode=5 สำหรับหน้าข้อความ
+                    publishCommand('commands', 'mode=5');
+                // START: เพิ่มโค้ดใหม่
+                } else if (pageId === 'page-voice') {
+                    // ส่งคำสั่ง mode=6 สำหรับหน้า Voice
+                    publishCommand('commands', 'mode=6');
+                // END: เพิ่มโค้ดใหม่
+                }
+            } else {
+                console.error(`Page with ID ${pageId} not found.`);
+            }
+        };
+
+                    
+                    function handlePageChange(pageId) {
+                        let modeValue;
+                        // Set a numeric value for each page
+                        if (pageId === 'page-gamepad') {
+                            modeValue = 2; // Gamepad mode
+                        } else if (pageId === 'page-pins') {
+                            modeValue = 3; // Pin Control mode
+                        }  else if (pageId === 'page-pin-status') {
+                            modeValue = 4;
+                            // ส่งคำสั่งขอข้อมูลสถานะ Pin ทันทีเมื่อเข้าหน้านี้
+                            if (isConnected) {
+                                publishCommand('commands', 'request_pin_status');
+                            }
+                        } else {
+                            modeValue = 1; // Default/Connect page
+                        }
+
+                        // Publish the mode command
+                        publishCommand('commands', `mode=${modeValue}`);
+                        
+                        // Update the local active mode based on the selected page
+                        if (pageId === 'page-gamepad') {
+                            activeMode = 'gamepad';
+                            updatePageStatus("", pageId);
+                        } else if (pageId === 'page-pins') {
+                            activeMode = 'pinControl';
+                            updatePageStatus("", pageId);
+                        } else if (pageId === 'page-pin-status') {
+                            activeMode = 'pinStatus';
+                            updatePageStatus("", pageId);
+                            // No need to send 'send_pin_data_enabled=True' anymore, as the mode will handle it.
+                        } else {
+                            activeMode = 'none';
+                            updatePageStatus("", pageId);
+                        }
+                        console.log(`Switched to page: ${pageId}. Active mode: ${activeMode}, sending mode value: ${modeValue}`);
+                    }
+                    
+            function updateConnectionStatus(message, color) {
+                const connectionTextElement = document.getElementById('connection-status-text');
+                const circleElement = document.getElementById('connection-status-circle');
+                if (connectionTextElement) {
+                    connectionTextElement.textContent = message;
+                }
+                if (circleElement) {
+                    circleElement.classList.remove('bg-red-500', 'bg-green-500');
+                    if (color === 'green') {
+                        circleElement.classList.add('bg-green-500');
+                    } else {
+                        circleElement.classList.add('bg-red-500');
+                    }
+                }
+            }
+
+
+            function updatePageStatus(message, pageId) {
+                let statusElement;
+                if (pageId === 'page-connect') {
+                    statusElement = document.getElementById('page-status');
+                } else if (pageId === 'page-gamepad') {
+                    statusElement = document.getElementById('page-status-gamepad');
+                } else if (pageId === 'page-pins') {
+                    statusElement = document.getElementById('page-status-pins');
+                } else if (pageId === 'page-pin-status') {
+                    statusElement = document.getElementById('page-status-pin-status');
+                // START: เพิ่มโค้ดใหม่
+                } else if (pageId === 'page-voice') {
+                    statusElement = document.getElementById('page-status-voice');
+                // END: เพิ่มโค้ดใหม่
+                }
+                    
+                if (statusElement) {
+                    statusElement.textContent = message;
+                }
+            }
+
+            function connectMQTT() {
+                updateConnectionStatus("สถานะ: กำลังเชื่อมต่อ...", "red");
+                const clientId = "web-" + Math.random().toString(16).substr(2, 8);
+                client = new Paho.MQTT.Client(HOST, PORT, "/mqtt", clientId);
+
+                client.onConnectionLost = onConnectionLost;
+                client.onMessageArrived = onMessageArrived;
+
+                try {
+                    client.connect({
+                        onSuccess: onConnect,
+                        useSSL: true,
+                        timeout: 5,
+                        onFailure: onFail
+                    });
+                } catch (e) {
+                    updateConnectionStatus(`Error: ${e.message}`, "red");
+                    console.error("MQTT connection failed:", e);
+                }
+            }
+
+            function onConnect() {
+                console.log("Connected to MQTT Broker.");
+                isConnected = true;
+                updateConnectionStatus("สถานะ: เชื่อมต่อแล้ว", "green");
+                showModal("เชื่อมต่อสำเร็จ!", "ตอนนี้คุณสามารถควบคุม Micro:bit ของคุณได้แล้ว");
+                
+                // Subscribe to the status topic for real-time updates
+                const statusTopic = `${uniqueId}/status`;
+                client.subscribe(statusTopic);
+                console.log(`Subscribed to topic: ${statusTopic}`);
+                
+                // Subscribe to the pin control topic to receive confirmation or status changes
+                const pinControlTopic = `${uniqueId}/pincontrol`;
+                client.subscribe(pinControlTopic);
+                console.log(`Subscribed to topic: ${pinControlTopic}`);
+            }
+
+            function onFail(responseObject) {
+                console.log("Connection failed: " + responseObject.errorMessage);
+                isConnected = false;
+                updateConnectionStatus(`สถานะ: การเชื่อมต่อล้มเหลว (${responseObject.errorMessage})`, "red");
+               
+            }
+
+            // --- Complete the onConnectionLost function ---
+            function onConnectionLost(responseObject) {
+                if (responseObject.errorCode !== 0) {
+                    console.log("Connection lost: " + responseObject.errorMessage);
+                    isConnected = false;
+                    updateConnectionStatus("สถานะ: ไม่ได้เชื่อมต่อ", "red");
+                    
+                }
+            }
+            
+            // --- Functions to update UI elements based on received data ---
+                    function updatePinControlUI(pinId, value) {
+                        // This function specifically handles updates for the Pin Control page
+                        const pinCircle = document.getElementById(`pin-control-circle-${pinId}`);
+                        if (pinCircle) {
+                            // Remove previous state classes
+                            pinCircle.classList.remove('high', 'low', 'bg-gray-400');
+                            
+                            if (value === 1) {
+                                pinCircle.classList.add('high');
+                            } else if (value === 0) {
+                                pinCircle.classList.add('low');
+                            } else {
+                                // For analog values or unknown states, set to gray
+                                pinCircle.classList.add('bg-gray-400');
+                            }
+                        }
+                    }
+            
+            function updatePinStatusUI(pinId, value) {
+                // Find the pin type from the globally defined statusPins array
+                const pinInfo = statusPins.find(p => p.id === pinId);
+                const pinType = pinInfo ? pinInfo.type : 'unknown';
+                
+                // Select elements based on the pin ID
+                const pinCard = document.getElementById(`pin-status-card-${pinId}`);
+                const valueElement = document.getElementById(`pin-value-${pinId}`);
+
+                if (pinCard && valueElement) {
+                    // Clear existing state classes
+                    pinCard.classList.remove('high', 'low', 'analog', 'bg-new-pastel-card');
+
+                    if (pinType === 'digital') {
+                        if (value === 1) {
+                            pinCard.classList.add('high');
+                            valueElement.textContent = "HIGH (1)";
+                        } else if (value === 0) {
+                            pinCard.classList.add('low');
+                            valueElement.textContent = "LOW (0)";
+                        } else {
+                            // Fallback for non-binary digital values
+                            pinCard.classList.add('bg-new-pastel-card');
+                            valueElement.textContent = value;
+                        }
+                    } else if (pinType === 'analog') {
+                        pinCard.classList.add('analog');
+                        valueElement.textContent = value;
+                    } else {
+                        // Fallback for unknown pins
+                        pinCard.classList.add('bg-new-pastel-card');
+                        valueElement.textContent = value;
+                    }
+                }
+            }
+        // Add this new function inside the <script> tag to update the message log
+        function addLogMessage(message) {
+            const logContainerMain = document.getElementById('message-log-container');
+            const logContainerShortcut = document.getElementById('message-log-container-shortcut');
+
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.classList.add('mb-1');
+            logEntry.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> ${message}`;
+
+            // Add the log entry to the main message page
+            if (logContainerMain) {
+                logContainerMain.appendChild(logEntry.cloneNode(true)); // Use cloneNode to add to a new parent
+                logContainerMain.scrollTop = logContainerMain.scrollHeight;
+            }
+
+            // Add the log entry to the shortcut page
+            if (logContainerShortcut) {
+                logContainerShortcut.appendChild(logEntry);
+                logContainerShortcut.scrollTop = logContainerShortcut.scrollHeight;
+            }
+        }
+
+        // Add this event listener to the existing window.onload or DOMContentLoaded block
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... (existing code for other event listeners) ...
+
+            const clearLogBtnMain = document.getElementById('clearLogBtn');
+            if (clearLogBtnMain) {
+                clearLogBtnMain.addEventListener('click', () => {
+                    const logContainer = document.getElementById('message-log-container');
+                    if (logContainer) {
+                        logContainer.innerHTML = '';
+                        addLogMessage('Log cleared.');
+                    }
+                });
+            }
+
+            // NEW: Event Listener for the new Clear button on the Shortcut page
+            const clearLogBtnShortcut = document.getElementById('clearLogBtn-shortcut');
+            if (clearLogBtnShortcut) {
+                clearLogBtnShortcut.addEventListener('click', () => {
+                    const logContainer = document.getElementById('message-log-container-shortcut');
+                    if (logContainer) {
+                        logContainer.innerHTML = '';
+                        addLogMessage('Log cleared.');
+                    }
+                });
+            }
+        });
+        
+                    // --- MQTT handling logic (updated to call the correct UI functions) ---
+                    function onMessageArrived(message) {
+                        const topic = message.destinationName;
+                        const payload = message.payloadString;
+
+                        console.log(`Received message on topic "${topic}": ${payload}`);
+                        
+                        try {
+                            if (topic.includes('status/pin')) {
+                                const parts = topic.split('/');
+                                const pinId = parts[parts.length - 1];
+                                const pinValue = JSON.parse(payload);
+                                const pinControlPage = document.getElementById('page-pins');
+                                if (pinControlPage && !pinControlPage.classList.contains('hidden-page')) {
+                                    updatePinControlStatus(pinId.toUpperCase(), pinValue);
+                                }
+                                const pinStatusPage = document.getElementById('page-pin-status');
+                                if (pinStatusPage && !pinStatusPage.classList.contains('hidden-page')) {
+                                    updatePinStatusUI(pinId.toUpperCase(), pinValue);
+                                }
+                            } else if (topic.includes('status')) {
+                                const data = JSON.parse(payload);
+                                if (data.pins) {
+                                    const pinControlPage = document.getElementById('page-pins');
+                                    if (pinControlPage && !pinControlPage.classList.contains('hidden-page')) {
+                                        for (const pinId in data.pins) {
+                                            const pinValue = data.pins[pinId];
+                                            updatePinControlStatus(pinId.toUpperCase(), pinValue);
+                                        }
+                                    }
+                                    const pinStatusPage = document.getElementById('page-pin-status');
+                                    if (pinStatusPage && !pinStatusPage.classList.contains('hidden-page')) {
+                                        for (const pinId in data.pins) {
+                                            const pinValue = data.pins[pinId];
+                                            updatePinStatusUI(pinId.toUpperCase(), pinValue);
+                                        }
+                                    }
+                                } else if (data.data) {
+                                    // NEW: Handle messages with a 'data' field and log them
+                                    addLogMessage(`[From Micro:bit] ${data.data}`);
+                                } else if (data.deviceId) {
+                                    // Handle status messages that only contain deviceId
+                                }
+                            } else if (topic.includes('status/message')) {
+                                showModal('Micro:bit Message', payload);
+                            } else {
+                                console.warn(`Unrecognized topic: ${topic}`);
+                            }
+                        } catch (e) {
+                            console.error("Error parsing message payload:", e);
+                            showModal('MQTT Error', 'Failed to parse incoming data.');
+                        }
+                    }
+
+
+                    // Add this event listener to the existing window.onload or DOMContentLoaded block
+                    document.addEventListener('DOMContentLoaded', () => {
+                        // Other event listeners...
+                        const clearLogBtn = document.getElementById('clearLogBtn');
+                        if (clearLogBtn) {
+                            clearLogBtn.addEventListener('click', () => {
+                                const logContainer = document.getElementById('message-log-container');
+                                if (logContainer) {
+                                    logContainer.innerHTML = ''; // Clear the content
+                                    addLogMessage('Log cleared.');
+                                }
+                            });
+                        }
+                    });
+
+            window.publishCommand = function(topicSuffix, payload, addClass) {
+                if (!isConnected) {
+                    
+                    return;
+                }
+                if (!client) {
+                    console.error("MQTT client is not initialized.");
+                    return;
+                }
+
+                const topic = `${uniqueId}/${topicSuffix}`;
+                const message = new Paho.MQTT.Message(payload);
+                message.destinationName = topic;
+                
+                try {
+                    client.send(message);
+                    console.log(`Published to ${topic}: ${payload}`);
+                                    
+                    // Add/remove active class for button visual feedback
+                    const buttonId = `btn-${payload.split('_')[0].toLowerCase()}`;
+                    const buttonElement = document.getElementById(buttonId);
+                    if (buttonElement) {
+                        if (addClass) {
+                            buttonElement.classList.add('active');
+                        } else {
+                            buttonElement.classList.remove('active');
+                        }
+                    } else {
+                        const dpadButtons = {
+                            'UP_PRESSED': 'dpad-up', 'UP_RELEASED': 'dpad-up',
+                            'DOWN_PRESSED': 'dpad-down', 'DOWN_RELEASED': 'dpad-down',
+                            'LEFT_PRESSED': 'dpad-left', 'LEFT_RELEASED': 'dpad-left',
+                            'RIGHT_PRESSED': 'dpad-right', 'RIGHT_RELEASED': 'dpad-right',
+                        };
+                        const dpadId = dpadButtons[payload];
+                        const dpadElement = document.getElementById(dpadId);
+                        if (dpadElement) {
+                            if (addClass) {
+                                dpadElement.classList.add('active');
+                            } else {
+                                dpadElement.classList.remove('active');
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to send message:", e);
+                    showModal("ส่งข้อความล้มเหลว", "โปรดลองใหม่อีกครั้ง");
+                }
+            }
+                
+            // --- Pin Control Functionality ---
+            window.handleToggleChange = function(pin, isChecked) {
+                const state = isChecked ? '1' : '0';
+                publishCommand('commands', `${pin}=${state}`);
+            }
+
+            // --- Pin Status Functions ---
+                
+                
+            function createPinStatusCards() {
+                const container = document.getElementById('pin-status-container');
+                if (!container) {
+                    console.error("Pin status container not found.");
+                    return;
+                }
+                container.innerHTML = ''; // Clear existing content
+                
+                statusPins.forEach(pin => {
+                    const pinCard = document.createElement('div');
+                    pinCard.id = `pin-status-card-${pin.id}`;
+                    pinCard.classList.add('pin-card', 'bg-new-pastel-card');
+                    
+                    // Initial content for the card
+                    pinCard.innerHTML = `
+                        <p class="text-xl font-bold text-new-pastel-text mb-2">${pin.name}</p>
+                        <p class="text-xs font-semibold text-new-pastel-text opacity-70 mb-2">${pin.type.toUpperCase()}</p>
+                        <div class="text-3xl font-bold text-new-pastel-text" id="pin-value-${pin.id}">--</div>
+                    `;
+                    
+                    container.appendChild(pinCard);
+                });
+            }
+                
+            function updatePinStatusCard(pinId, value) {
+                const pinCard = document.getElementById(`pin-status-card-${pinId}`);
+                const valueElement = document.getElementById(`pin-value-${pinId}`);
+                if (pinCard && valueElement) {
+                    // Determine the pin type from the global configuration
+                    const pinInfo = statusPins.find(p => p.id === pinId);
+                    const pinType = pinInfo ? pinInfo.type : 'unknown';
+
+                    // Update the visual status based on pin type and value
+                    pinCard.classList.remove('high', 'low', 'analog', 'bg-new-pastel-card');
+                    
+                    if (pinType === 'digital') {
+                        if (value === 1) {
+                            pinCard.classList.add('high');
+                            valueElement.textContent = "HIGH (1)";
+                        } else {
+                            pinCard.classList.add('low');
+                            valueElement.textContent = "LOW (0)";
+                        }
+                    } else if (pinType === 'analog') {
+                        pinCard.classList.add('analog');
+                        valueElement.textContent = value;
+                    } else {
+                        // Fallback for unknown pins
+                        pinCard.classList.add('bg-new-pastel-card');
+                        valueElement.textContent = value;
+                    }
+                }
+            }
+                
+            // --- Custom Message Modal UI Logic ---\
+            const modal = document.getElementById('messageModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+            modalCloseBtn.onclick = () => {
+                modal.classList.remove('visible');
+            };
+
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.classList.remove('visible');
+                }
+            };
+
+            function showModal(title, message) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modal.classList.add('visible');
+            }
+        
+        
+        // ฟังก์ชันสำหรับสร้างปุ่มลัด (แก้ไขแล้ว)
+        // แก้ไขในส่วนของ window.createMessageInput เพื่อหยุดการส่ง 'end'
+        window.createMessageInput = function() {
+            const messageContainer = document.getElementById('message-list-container');
+            const addMessageBtn = document.getElementById('addMessageBtn');
+            const presetNameInput = document.getElementById('presetNameInput');
+            const saveMessagesBtn = document.getElementById('saveMessagesBtn');
+            const presetSelector = document.getElementById('presetSelector');
+            const loadPresetBtn = document.getElementById('loadPresetBtn');
+            const deletePresetBtn = document.getElementById('deletePresetBtn');
+            const shareDataTextarea = document.getElementById('shareDataTextarea');
+            const exportBtn = document.getElementById('exportBtn');
+            const importBtn = document.getElementById('importBtn');
+            const showShortcutsBtn = document.getElementById('show-shortcuts-btn');
+            const backToMessageBtn = document.getElementById('back-to-message-btn');
+            const messagePage = document.getElementById('page-message');
+            const shortcutPage = document.getElementById('page-shortcuts');
+            
+
+            // เพิ่มตัวแปรสำหรับ Web Speech API
+            let speechRecognition;
+            let isListening = false;
+
+            const addMessageField = (value = '', labelText = 'Name', icon = '🔗') => {
+                const messageCount = messageContainer.children.length + 1;
+                const newFieldId = `message-field-${messageCount}`;
+                const newInputId = `messageInput${messageCount}`;
+                const newBtnId = `sendMessageBtn${messageCount}`;
+                const newLabelId = `messageLabel${messageCount}`;
+
+                const newFieldHTML = `
+                    <div id="${newFieldId}" class="p-4 bg-new-pastel-card rounded-lg shadow-none flex items-center space-x-4">
+                        <label id="${newLabelId}" for="${newInputId}" class="block w-32 text-sm font-medium text-new-pastel-text whitespace-nowrap cursor-pointer hover:text-new-pastel-accent-1" data-icon="${icon}">
+                            <span class="label-text">${labelText}</span>
+                        </label>
+                        <input type="text" id="${newInputId}" placeholder="ใส่ข้อความที่จะส่ง" value="${value}" class="mt-1 flex-auto w-full rounded-md border-new-pastel-accent-2 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
+                        <button id="${newBtnId}" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 whitespace-nowrap">
+                            Send
+                        </button>
+                        <button class="remove-message-btn bg-red-500 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 w-1/2 md:w-auto">
+                            Remove
+                        </button>
+                    </div>
+                `;
+                messageContainer.insertAdjacentHTML('beforeend', newFieldHTML);
+
+                const newButton = document.getElementById(newBtnId);
+                const newInput = document.getElementById(newInputId);
+                const removeButton = messageContainer.lastElementChild.querySelector('.remove-message-btn');
+                
+                if (newButton) {
+                    newButton.addEventListener('click', () => {
+                        const message = newInput.value.trim();
+                        if (message) {
+                            publishCommand('commands', message);
+                            updatePageStatus("ข้อความถูกส่งแล้ว", "page-message");
+                        } else {
+                            updatePageStatus("โปรดใส่ข้อความก่อนส่ง", "page-message");
+                        }
+                    });
+                }
+                if (removeButton) {
+                    removeButton.addEventListener('click', () => {
+                        removeButton.closest('.p-4').remove();
+                    });
+                }
+            };
+
+            // ส่วนที่ใช้สำหรับการแก้ไขชื่อและไอคอน (messageContainer.addEventListener)
+            messageContainer.addEventListener('click', (event) => {
+                const labelElement = event.target.closest('label');
+                if (labelElement) {
+                    const currentLabelText = labelElement.querySelector('.label-text').textContent.trim();
+                    const currentIcon = labelElement.dataset.icon;
+                    
+                    // สร้าง Modal สำหรับแก้ไขชื่อและไอคอน
+                    const modal = document.createElement('div');
+                    modal.classList.add('fixed', 'inset-0', 'bg-gray-800', 'bg-opacity-75', 'flex', 'items-center', 'justify-center', 'z-50');
+                    modal.innerHTML = `
+                        <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+                            <h3 class="text-lg font-bold mb-4">แก้ไขชื่อและเลือกไอคอน</h3>
+                            <input type="text" id="edit-label-input" class="w-full p-2 mb-4 border rounded" value="${currentLabelText}">
+                            <div class="grid grid-cols-6 gap-2" id="icon-grid">
+                                ${['🔗', '💡', '🏠', '🛋️', '🛏️', '🛁', '🪴', '❄️', '🔌', '🚪', '🚗', '🔔', '🪟', '🍽️', '💻', '⚙️', '🌈', '🚨'].map(icon => 
+                                    `<button class="icon-option p-2 text-3xl hover:bg-gray-200 rounded ${icon === currentIcon ? 'bg-gray-300' : ''}" data-icon="${icon}">${icon}</button>`
+                                ).join('')}
+                            </div>
+                            <div class="flex justify-end mt-4">
+                                <button id="cancel-edit-btn" class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">ยกเลิก</button>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+
+                    const iconButtons = modal.querySelectorAll('.icon-option');
+                    let selectedIcon = currentIcon;
+
+                    iconButtons.forEach(button => {
+                        button.addEventListener('click', () => {
+                            // ลบสถานะที่เลือกเดิมออก
+                            modal.querySelector('.bg-gray-300')?.classList.remove('bg-gray-300');
+                            // เพิ่มสถานะที่เลือกใหม่
+                            button.classList.add('bg-gray-300');
+                            selectedIcon = button.dataset.icon;
+                            
+                            const newName = document.getElementById('edit-label-input').value.trim();
+                            labelElement.querySelector('.label-text').textContent = newName || currentLabelText;
+                            labelElement.dataset.icon = selectedIcon;
+                            
+                            document.body.removeChild(modal);
+                            updatePageStatus(`เปลี่ยนชื่อเป็น "${newName || currentLabelText}" และไอคอนเป็น "${selectedIcon}" เรียบร้อยแล้ว`, "page-message");
+                            createShortcutButtons();
+                        });
+                    });
+
+                    document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+                        document.body.removeChild(modal);
+                    });
+                }
+            });
+
+            const saveMessages = () => {
+                const presetName = presetNameInput.value.trim();
+                if (!presetName) {
+                    updatePageStatus("โปรดตั้งชื่อชุดข้อความก่อนบันทึก", "page-message");
+                    return;
+                }
+
+                const messageInputs = document.querySelectorAll('#message-list-container .p-4');
+                const messagesToSave = Array.from(messageInputs).map(item => {
+                    const input = item.querySelector('input');
+                    const labelEl = item.querySelector('label');
+                    const label = labelEl.querySelector('.label-text').textContent.trim();
+                    const icon = labelEl.dataset.icon || '🔗';
+                    return { label: label, value: input.value, icon: icon };
+                });
+
+                if (messagesToSave.length === 0) {
+                    updatePageStatus("ไม่มีข้อมูลให้บันทึก", "page-message");
+                    return;
+                }
+
+                let presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                presets[presetName] = messagesToSave;
+                localStorage.setItem('messagePresets', JSON.stringify(presets));
+                updatePresetSelector();
+                createShortcutButtons();
+                updatePageStatus(`บันทึกชุดข้อความ "${presetName}" เรียบร้อยแล้ว`, "page-message");
+            };
+
+            const loadPreset = () => {
+                const presetName = presetSelector.value;
+                if (!presetName) {
+                    updatePageStatus("โปรดเลือกชุดข้อความที่ต้องการโหลด", "page-message");
+                    return;
+                }
+
+                const presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                const messages = presets[presetName];
+
+                if (messages) {
+                    messageContainer.innerHTML = '';
+                    messages.forEach(item => addMessageField(item.value, item.label, item.icon));
+                    presetNameInput.value = presetName;
+                    createShortcutButtons();
+                    updatePageStatus(`โหลดชุดข้อความ "${presetName}" เรียบร้อยแล้ว`, "page-message");
+                }
+            };
+
+            const deletePreset = () => {
+                const presetName = presetSelector.value;
+                if (!presetName) {
+                    updatePageStatus("โปรดเลือกชุดข้อความที่ต้องการลบ", "page-message");
+                    return;
+                }
+
+                let presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                delete presets[presetName];
+                localStorage.setItem('messagePresets', JSON.stringify(presets));
+                updatePresetSelector();
+                updatePageStatus(`ลบชุดข้อความ "${presetName}" เรียบร้อยแล้ว`, "page-message");
+            };
+
+            const exportPresets = () => {
+                const presets = localStorage.getItem('messagePresets');
+                shareDataTextarea.value = presets;
+                updatePageStatus("คัดลอกข้อความในช่องด้านล่างเพื่อแชร์", "page-message");
+            };
+
+            const importPresets = () => {
+                try {
+                    const dataToImport = shareDataTextarea.value;
+                    if (!dataToImport) {
+                        updatePageStatus("โปรดวางข้อมูลในช่องก่อนนำเข้า", "page-message");
+                        return;
+                    }
+
+                    const importedPresets = JSON.parse(dataToImport);
+                    let currentPresets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                    const newPresets = { ...currentPresets, ...importedPresets };
+                    localStorage.setItem('messagePresets', JSON.stringify(newPresets));
+                    updatePresetSelector();
+                    createShortcutButtons();
+                    updatePageStatus("นำเข้าข้อมูลเรียบร้อยแล้ว", "page-message");
+                } catch (e) {
+                    updatePageStatus("ข้อมูลที่นำเข้าไม่ถูกต้อง", "page-message");
+                }
+            };
+
+            const updatePresetSelector = () => {
+                const presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+                presetSelector.innerHTML = '<option value="">-- Select --</option>';
+                for (const name in presets) {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    presetSelector.appendChild(option);
+                }
+            };
+
+            // ในฟังก์ชัน createShortcutButtons
+            const createShortcutButtons = () => {
+                const container = document.getElementById('shortcut-buttons-container');
+                if (!container) return;
+                container.innerHTML = '';
+
+                const messageItems = document.querySelectorAll('#message-list-container .p-4');
+                Array.from(messageItems).forEach(item => {
+                    const input = item.querySelector('input');
+                    const labelEl = item.querySelector('label');
+                    const label = labelEl.querySelector('.label-text').textContent.trim();
+                    const value = input.value;
+                    const icon = labelEl.dataset.icon || '🔗';
+
+                    if (value.trim() !== '') {
+                        const button = document.createElement('button');
+                        button.innerHTML = `<span class="text-3xl">${icon}</span><span class="text-xs mt-1">${label}</span>`;
+                        button.classList.add('bg-new-pastel-card', 'text-new-pastel-text', 'font-bold', 'p-6', 'rounded-xl', 'shadow-none', 'transition', 'duration-300', 'ease-in-out', 'hover:opacity-90', 'flex', 'flex-col', 'items-center', 'justify-center', 'text-center', 'aspect-square');
+                        button.addEventListener('click', () => {
+                            publishCommand('commands', value);
+                            updatePageStatus(`ส่งคำสั่ง "${value}" จากปุ่ม "${label}" แล้ว`, 'page-message');
+                        });
+                        container.appendChild(button);
+                    }
+                });
+            };
+
+           
+
+               
+
+            if (showShortcutsBtn) {
+                showShortcutsBtn.addEventListener('click', () => {
+                    messagePage.classList.add('hidden-page');
+                    shortcutPage.classList.remove('hidden-page');
+                    createShortcutButtons();
+                });
+            }
+
+            if (backToMessageBtn) {
+                backToMessageBtn.addEventListener('click', () => {
+                    shortcutPage.classList.add('hidden-page');
+                    messagePage.classList.remove('hidden-page');
+                });
+            }
+
+            updatePresetSelector();
+            const presets = JSON.parse(localStorage.getItem('messagePresets')) || {};
+            if (Object.keys(presets).length > 0) {
+                const firstPresetName = Object.keys(presets)[0];
+                const messages = presets[firstPresetName];
+                messages.forEach(item => addMessageField(item.value, item.label, item.icon));
+                presetNameInput.value = firstPresetName;
+            } else {
+                addMessageField();
+            }
+
+            if (addMessageBtn) {
+                addMessageBtn.addEventListener('click', () => addMessageField(''));
+            }
+            if (saveMessagesBtn) {
+                saveMessagesBtn.addEventListener('click', saveMessages);
+            }
+            if (loadPresetBtn) {
+                loadPresetBtn.addEventListener('click', loadPreset);
+            }
+            if (deletePresetBtn) {
+                deletePresetBtn.addEventListener('click', deletePreset);
+            }
+            if (exportBtn) {
+                exportBtn.addEventListener('click', exportPresets);
+            }
+            if (importBtn) {
+                importBtn.addEventListener('click', importPresets);
+            }
+            
+            
+        };
+
+        //ส่วนของเมนู
+        
+// โค้ดใหม่สำหรับ Dropdown Menu
+document.addEventListener('DOMContentLoaded', () => {
+    const menuToggleBtn = document.getElementById('menu-toggle-btn');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const navButtons = document.querySelectorAll('#dropdown-menu button');
+    
+    // ฟังก์ชันเปิด/ปิดเมนู
+    const toggleMenu = (event) => {
+        // ป้องกันการทำงานซ้ำซ้อน
+        if (event) {
+            event.stopPropagation();
+        }
+        
+        const isOpen = dropdownMenu.classList.contains('translate-x-0');
+        
+        if (isOpen) {
+            // ปิดเมนู
+            dropdownMenu.classList.remove('translate-x-0');
+            dropdownMenu.classList.add('-translate-x-full');
+            menuOverlay.classList.remove('opacity-50');
+            menuOverlay.classList.add('hidden');
+            
+        } else {
+            // เปิดเมนู
+            dropdownMenu.classList.remove('-translate-x-full');
+            dropdownMenu.classList.add('translate-x-0');
+            menuOverlay.classList.remove('hidden');
+            
+            // ใช้ setTimeout เพื่อให้เกิด transition หลังจากเปลี่ยน display
+            setTimeout(() => {
+                 menuOverlay.classList.add('opacity-50'); 
+            }, 50);
+        }
+    };
+
+    // 1. ผูก Event กับปุ่ม Hamburger
+    if (menuToggleBtn) {
+        menuToggleBtn.addEventListener('click', toggleMenu);
+    }
+    
+    // 2. ผูก Event กับ Overlay เพื่อปิดเมนูเมื่อคลิกนอกพื้นที่
+    if (menuOverlay) {
+        menuOverlay.addEventListener('click', toggleMenu);
+    }
+    
+    // 3. ผูก Event กับปุ่มนำทางใน Dropdown เพื่อปิดเมนูหลังคลิก
+    // การเรียก showPage(event, pageId) จะเกิดขึ้นอัตโนมัติจาก onclick ใน HTML
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // หน่วงเวลาเล็กน้อยก่อนปิด เพื่อให้ผู้ใช้เห็นว่าคลิกไปแล้ว
+            setTimeout(toggleMenu, 150); 
+        });
+    });
+    
+});
+        
+        
+        </script>
+
+
+</body>
+</html>
