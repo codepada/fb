@@ -384,19 +384,56 @@
 </head>
 <body class="bg-ui-bg min-h-screen">
     
-    <nav class="bg-new-pastel-card shadow-lg p-2 flex justify-between items-center fixed top-0 left-0 w-full z-50">
-            <div class="flex items-center space-x-4">
-                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-connect')">Connect</a>
-                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-gamepad')">Gamepad</a>
-                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-pins')">Pin Control</a>
-                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-pin-status')">Pin Status</a>
-                <a href="#" class="sidebar-link px-4 py-2 rounded-lg text-new-pastel-text" onclick="showPage(event, 'page-message')">Message</a>
-            </div>
-            <div class="connection-status-container">
-                <div id="connection-status-circle" class="w-3 h-3 rounded-full bg-red-500"></div>
-                <div id="connection-status-text" class="font-medium text-new-pastel-text">สถานะ: ไม่ได้เชื่อมต่อ</div>
-            </div>
-        </nav>
+    <header class="fixed top-0 left-0 w-full bg-new-pastel-card p-3 shadow-md z-50 flex items-center justify-between">
+    <div class="flex items-center">
+        <button id="menu-toggle-btn" class="text-new-pastel-text p-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+        <h1 class="text-lg font-bold ml-4 text-new-pastel-text">Micro:bit Control</h1>
+    </div>
+    
+    <div class="connection-status-container">
+        <div id="connection-status-circle" class="w-3 h-3 rounded-full bg-red-500"></div>
+        <div id="connection-status-text" class="font-medium text-new-pastel-text">สถานะ: ไม่ได้เชื่อมต่อ</div>
+    </div>
+</header>
+
+<div id="dropdown-menu" class="fixed top-0 left-0 h-full w-64 bg-new-pastel-bg shadow-2xl z-50 transform -translate-x-full transition-transform duration-300">
+    <div class="p-4 text-new-pastel-text space-y-2 pt-16">
+        
+        <button id="nav-btn-connect" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-connect')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0v4m-3 3h-2a1 1 0 00-1 1v4a1 1 0 001 1h2a1 1 0 001-1v-4a1 1 0 00-1-1z" /></svg>Connect
+        </button>
+        
+        <button id="nav-btn-gamepad" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-gamepad')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15.75L6.75 11.5L11 7.25M13 7.25L17.25 11.5L13 15.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>Gamepad
+        </button>
+        
+        <button id="nav-btn-pins" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-pins')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20v-6h4v6a1 1 0 001 1h3a1 1 0 001-1v-9l-7-6-7 6v9a1 1 0 001 1h3a1 1 0 001-1z" /></svg>Pin Control
+        </button>
+        
+        <button id="nav-btn-pin-status" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-pin-status')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6m-1-7h1m-1 4h1m-1 7h1" /></svg>Pin Status
+        </button>
+        
+        <button id="nav-btn-message" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-message')">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-3.692-.68l-3.23 1.077c-.473.158-.97-.24-1.127-.713l-1.077-3.23A9.86 9.86 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>Message
+        </button>
+        
+        <button id="nav-btn-voice" class="nav-btn w-full text-left flex items-center p-2 rounded hover:bg-new-pastel-card transition duration-150" onclick="showPage(event, 'page-voice')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7v-2m0-12V5a7 7 0 017 7h-2m-7 0a5 5 0 015-5v-2a9 9 0 00-9 9h2m5-5v10a4 4 0 01-4 4H9a4 4 0 01-4-4V7a4 4 0 014-4h2a4 4 0 014 4z" />
+            </svg>
+            Voice
+        </button>
+        
+    </div>
+</div>
+
+<div id="menu-overlay" class="fixed inset-0 bg-black opacity-0 z-40 hidden transition-opacity duration-300"></div>
         
         
        
@@ -408,7 +445,7 @@
     
 
     <div class="container-wrapper">
-        <div class="main-content">
+        <div class="main-content **pt-16**">
             <section id="page-connect" class="space-y-4">
                 <h2 class="text-xl font-semibold text-center text-new-pastel-text">เชื่อมต่อกับ Micro:bit</h2>
                 <div class="p-4 bg-new-pastel-card rounded-lg shadow-sm">
@@ -557,7 +594,7 @@
                                         <button id="show-shortcuts-btn" class="bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 w-full sm:w-auto">
                                             Shortcut
                                         </button>
-                                        <div class="relative w-full sm:w-auto">
+                                        <div class="relative w-full sm:w-auto"> 
                                             <label for="presetNameInput" class="sr-only">ชื่อชุดข้อความ (Preset Name)</label>
                                             <input type="text" id="presetNameInput" placeholder="ตั้งชื่อ Preset" class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
                                         </div>
@@ -644,10 +681,36 @@
                 </div>
             </section>
 
+           <section id="page-voice" class="hidden-page space-y-8 text-center">
+    <h2 class="text-xl font-semibold text-new-pastel-text">Voice Command</h2>
+    <div class="p-6 bg-new-pastel-card rounded-xl shadow-lg flex flex-col items-center space-y-6">
+        <button id="voice-record-btn" class="w-24 h-24 rounded-full bg-new-pastel-accent-1 text-white font-bold text-lg shadow-xl transition duration-300 ease-in-out hover:bg-new-pastel-accent-2 flex items-center justify-center transform active:scale-95"
+            ontouchstart="startVoiceRecognition()" ontouchend="stopVoiceRecognition()" 
+            onmousedown="startVoiceRecognition()" onmouseup="stopVoiceRecognition()">
+            <svg id="mic-icon" class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M7 4a3 3 0 00-3 3v2a3 3 0 003 3h6a3 3 0 003-3V7a3 3 0 00-3-3H7zM5 7a1 1 0 011-1h8a1 1 0 011 1v2a1 1 0 01-1 1H6a1 1 0 01-1-1V7zm5 8a5 5 0 00-5 5h10a5 5 0 00-5-5z" clip-rule="evenodd"></path>
+            </svg>
+        </button>
+        <p id="voice-status-text" class="text-lg font-medium text-new-pastel-text">กดค้างเพื่อพูด</p>
+        
+        <div class="w-full hidden">
+            <label class="block text-sm font-medium text-new-pastel-text mb-1 text-left">ข้อความที่แปลงได้:</label>
+            <div id="transcript-text" class="w-full min-h-12 p-3 bg-white border border-new-pastel-accent-3 rounded-md text-new-pastel-text text-left break-words">...</div>
+        </div>
+        
+        <div class="w-full hidden">
+            <label class="block text-sm font-medium text-new-pastel-text mb-1 text-left">คำสั่ง MQTT ที่ส่ง:</label>
+            <div id="mqtt-command-sent" class="w-full min-h-8 p-3 bg-white border border-new-pastel-accent-3 rounded-md text-new-pastel-accent-1 font-mono text-left">---</div>
+        </div>
+    </div>
+    
+    <div class="font-medium text-new-pastel-text text-center mt-4 **hidden**" id="page-status-voice"></div>
+</section>
+
         </div>
     </div>
 
-    <div id="messageModal" class="modal">
+    <div id="messageModal" class="modal ">
         <div class="modal-content">
             <h3 id="modalTitle" class="text-lg font-bold text-new-pastel-text mb-2"></h3>
             <p id="modalMessage" class="text-new-pastel-text mb-4"></p>
@@ -658,6 +721,347 @@
     </div>
 
     <script>
+
+        let recognition;
+let finalTranscript = '';
+let isRecording = false;
+
+// Function to handle the voice commands
+
+function handleVoiceCommand(transcript) {
+    const lowerTranscript = transcript.toLowerCase().trim();
+    let commandToSend = "";
+    
+
+    // Keywords for 'on' - คำสั่งเปิด (รวมคำใกล้เคียงมากกว่า 200 คำ)
+                    const onKeywords = [
+                        // คำสั่งหลักและคำที่เคยเพี้ยนมาก่อน (96 คำ)
+                        "ปูปะเติด", "เปิดประตู", "เปิดปะดู", "ปรูปะเติด", "ปูประเสิรฐ", "ปูประเสริฐ",
+                        "เปิดผู้ตู", "กูเปิด", "เปิดกระโปรง", "เปิดระตู", "ปูประติษฐ์",
+                        "เปิดผัด", "เปิดปัด", "เปิดปาด", "ปูเปิด", "กูเปิดประตู",
+                        "เบิกประตู", "เปิ้ดประตู", "เปิดตู้", "เปิดปะติ", "โปเป็ด", "ปูเป็ด", "เปิดผัด",
+                        "ปุ๊ปเปิด", "ปุ๊ปปะติ", "ปูป้าเติด", "ปู่ปะเติด", "ประตูเปิด", "เปิดปุ๊ป",
+                        "เปิดตะตู", "เปิดจะตู", "เปิดปะตู", "ปูเปิดตัว", "เปิดตัว", "เฝ้าประตู",
+                        "เปิดประทุน", "เปิดปะทุ", "เบิ้ดประตู", "เปิดเปิด", "เปิดแป๊บ", "เป็ดเปิด",
+                        "ปูปะเถิด", "เปิดสตู", "เปิดปูตู", "เปิดหูตู", "เปิดตุ๊", "ปูตู่", "เปิดปลด",
+                        "เปิดปลดล็อก", "เปิดแล้ว", "เปิดเลย", "ประตูเปิดเลย", "เปิดตูด", "ปู้ปะเติด",
+                        "เปิดพระ", "เปิดฟ้า", "เปิดผ้า", "เปิดภาพ", "เปิดพัด", "เปิดบัด", "เปิดบาท",
+                        "เปิดผา", "เบิกพับ", "เปิดคับ", "เบิกคับ", "เบิดคับ", "เปิดกู", "เปิดปู",
+                        "เบิกปู่", "เปิดปลด", "เปิดปะโด", "เปิดปะตี", "กูเปิ้ด", "ปู้เป็ด", "เปิดโต้",
+                         , "ครูประเสริฐ","โชว์ประเสริฐ",
+                        "ปุ๊ปเปิดประตู", "ปู่ประตู่", "ผู้ประเสริฐ", "ปู่ประเสริฐ", "ปูประเสิด",
+                        "ปูประเดิด", "ปุ๊ปปะเถิด", "ปู่ปะถิด", "ผู้ปะเติด", "พูปะเติด", "บุปะเติด",
+                        "เปิดโปรด", "เปิดปวด", "เปิดปุด", "เปิดพุธ", "เปิดพร", "เปิดปวด",
+                        "โป๊ปปะเติด", "ปู๋ปะเติด", "เปิดปะติ", "ปูปะถิ", "เปิดประเสริฐ", "เปิดผู้ประเสริฐ",
+                        "ปุ๊ปะติ๊ด", "ปู่ปะติ๊ด", "เปิดตึก", "เปิดตูด", "ปู่ปะเสิรฐ์", "ผู้ประเสิรฐ์",
+                        "เปิ้ดประตู่", "เปิดบัดดี้", "เปิดปัดดี้", "ปู้ปะติ๊ด", "ปูปะตู้ด", "ปู่ปะตู้ด",
+                        "ปูปะเสร็จ", "ปู่ปะเสร็จ", "เปิดตระกูล", "เปิดจะกร", "เปิดจะตู้", "เปิดปุ๊บปั๊บ",
+                        "เปิดปั๊บปั๊บ", "ปูปะเสิบ", "ปูปะเสพ", "เปิดพูตู", "เปิดบะตู", "เปิดปะตรู",
+                        "เปิดไปเลย",  "เปิดไปได้", "เปิดไปนะ", "ปูปะเถิด", "ปูประติส",
+                        "ผู้ประดิษ", "ปู่ประดิษฐ์", "เปิดปู่", "เปิดปู่ปะ", "เปิดพูด", "เปิดพูดดี",
+                        "เบิดพู่ตู่", "เปิ้ดพู่ตู่", "ปู้ปะเสิด", "เปิดปะดูด", "ปูปะทิต", "ปูประทิต",
+                        
+                        // NEW: คำที่พยางค์หน้าหาย หรือพยางค์หลังหาย/เพี้ยนรุนแรง (100+ คำ)
+                        "ปะเติด", "ปะติ", "ปะดู", "ประเสิรฐ", "ประเสริฐ", "ประติษฐ์", "ปะถิด", "ปะเถิด",
+                        "พะเติด", "พะติด", "พระเสริฐ", "พะดู", "ปะตุ", "ปะทุ", "ปะโด", "ปะตี",
+                        "เติด", "เถิด", "เสริฐ", "เสิรฐ", "ติษฐ์", "ถิด", "ตู้", "ตู", "ถู่", "เต้ด",
+                        "ปูเติด", "ปูถิด", "ปูเสริฐ", "ปูเสิรฐ", "ปูติษฐ์", "ปู่เติด", "ปู่ถิด", "ปู่เสริฐ",
+                        "ปู่เสิรฐ", "ผู้เติด", "ผู้ถิด", "ผู้เสริฐ", "ผู้เสิรฐ", "พูดดี", "พูดเปิด", "พูตู้",
+                        "ปะเปิด", "ปะปลด", "ปะไฟ", "ปะเลย", "ปะได้", "ปะนะ", "ปะตาด", "ปะถาด",
+                        "ประเติด", "ประถิด", "ประเสริฐ", "ประเสิรฐ", "ประติษฐ์", "ประถิต", "ปุ๊ปเสริฐ",
+                        "ปุ๊ปเติด", "ปุ๊บเสริฐ", "ปุ๊บเติด", "ปุ๊ปถิด", "ปุ๊บถิด", "ปู่เปิด", "ปู่ปลด",
+                        "ผู้เปิด", "ผู้ปลด", "พูปิด", "พูดเปิด", "พูดปลด", "พูดไฟ", "เปิดเปิด",
+                        "เปิดปะ", "เปิดปู่", "เปิดผู้", "เปิดพูด", "เปิดเพด", "เปิดเพิด", "เบิ้ดปะ",
+                        "เปิดพัดลม", "เปิดพัด", "เปิดหม้อ", "เปิดถัง", "เปิดห้อง", "เปิดรถ", "เปิดพัด",
+                        "เปิดพับ", "เปิดพบ", "เปิดภาพ", "เปิดบาน", "เปิดบ้าน", "เปิดปาน", "เปิดป่าน",
+                        "เปิดปล้ำ", "เปิดหลอด", "เปิดหลอดไฟ", "เปิดระบบ", "เปิดประตูได้", "เปิดทันที",
+                        "เปิดสิ", "เปิดหน่อย", "เปิดให้หน่อย", "ปูปะ", "ปู่ปะ", "ผู้ปะ", "พูปะ",
+                        "ปะเปิด", "ปะปลด", "ปะไฟ", "ปะเลย", "ปะได้", "ปะนะ", "ปะตาด", "ปะถาด",
+                        "เบิ้ดปะ", "เบิดปะ", "เปิ้ดปะ", "เปิดปะ", "ปะเปิด", "ปะปลด", "ปะไฟ",
+                        "เปิดได้ไหม", "เปิดได้มั้ย", "เปิดซิ", "เปิดฉิ"
+                    ];
+                    
+                    // Keywords for 'off' - คำสั่งปิด (รวมคำใกล้เคียงมากกว่า 200 คำ)
+                    const offKeywords = [
+                        // คำสั่งหลักและคำที่เคยเพี้ยนมาก่อน (96 คำ)
+                        "ปิดประตู", "ปิดปะตู", "ปูปะติด", "ปรูประติด", "ปูประติด",
+                        "ปูประดิษฐ์", "ผู้ประดิษฐ์", "กูปิด", "ครูประดิษฐ์", "ปิดกระโปรง", "ปิดระตู",
+                        "ปิดผัด", "ปิดปัด", "ปิดปาด", "ปูปิด", "กูปิดประตู",
+                        "ปิดปุ๊บ", "ปิดปะติ", "ปิดตู้", "ปุ๊ปปิด", "ปู๊ปปิด", "ปิดประทุน", "ปิดประติ",
+                        "ประตูปิด", "ปิดปั๊บ", "ปิดเดี๋ยวนี้", "ปิดแล้ว", "ปิดเลย", "ปิดตะตู",
+                        "ปิดจะตู", "ปู่ปะติ", "ปิดปัด", "ปู๊ปปะติด", "ปู้ปิด", "ปู้ปะติด", "ปิดผิด",
+                        "ปิดเพด", "บิดประตู", "บิดปะตู", "ปิดปูตู่", "ปุ๊บปิด", "ปู๊ปปิด", "ปิดป๊าด",
+                        "ปิดปุ๊บปั๊บ", "ปิดประตูได้", "ปิดสตู", "ปิดประตูนะ", "ปิดป๊าติ", "ปิดโป๊",
+                        "ปิดตูด", "ปูปะถิด", "ปู้ปะถิด", "ปิดผ้า", "ปิดภาพ", "ปิดพัด", "ปิดบัด",
+                        "ปิดบาท", "ปิดผา", "บิดพับ", "ปิดคับ", "บิดคับ", "ปิดกู", "ปิดปู", "บิดปู่",
+                        "ปิดปลด", "ปิดปะโด", "ปิดปะตี", "กูปิ๊ด", "ปู้ปิ๊ด", "ปิดโต้", 
+                       
+                        "ปุ๊ปปิดประตู", "ปู่ประติด", "ผู้ประดิษฐ์", "ปู่ประดิษฐ์", "ปูประติด",
+                        "ปูประดิบ", "ปุ๊ปปะถิด", "ปู่ปะถิด", "ผู้ปะติด", "พูปะติด", "บุปะติด",
+                        "ปิดโปรด", "ปิดปวด", "ปิดปุด", "ปิดพุธ", "ปิดพร", "ปิดปวด",
+                        "โป๊ปปะติด", "ปู๋ปะติด", "ปิดปะติ", "ปูปะถิ", "ปิดประดิษฐ์", "ปิดผู้ประดิษฐ์",
+                        "ปุ๊ปะติ๊ด", "ปู่ปะติ๊ด", "ปิดตึก", "ปิดตูด", "ปู่ปะเสร็จ", "ผู้ประเสร็จ",
+                        "ปิ๊ดประตู่", "ปิดบัดดี้", "ปิดปัดดี้", "ปู้ปะติ๊ด", "ปูปะตู้ด", "ปู่ปะตู้ด",
+                        "ปูปะเสร็จ", "ปู่ปะเสร็จ", "ปิดตระกูล", "ปิดจะกร", "ปิดจะตู้", "ปิดปุ๊บปั๊บ",
+                        "ปิดปั๊บปั๊บ", "ปูปะเสิบ", "ปูปะเสพ", "ปิดพูตู", "ปิดบะตู", "ปิดปะตรู",
+                        "ปิดไปเลย", , "ปิดไปได้", "ปิดไปนะ", "ปูปะถิด", "ปูประติส",
+                        "ผู้ประดิษ", "ปู่ประดิษฐ์", "ปิดปู่", "ปิดปู่ปะ", "ปิดพูด", "ปิดพูดดี",
+                        "บิดพู่ตู่", "ปิ้ดพู่ตู่", "ปู้ปะเสิด", "ปิดปะดูด", "ปูปะทิต", "ปูประทิต",
+
+                        // NEW: คำที่พยางค์หน้าหาย หรือพยางค์หลังหาย/เพี้ยนรุนแรง (100+ คำ)
+                        "ปะติด", "ปะติ", "ปะตู", "ประดิษฐ์", "ประดิษ", "ประดิบ", "ปะถิด", "ปะถิ",
+                        "พะติด", "พะเติด", "พระดิษฐ์", "พะตู", "ปะตุ", "ปะทุ", "ปะโด", "ปะตี",
+                        "ติด", "ถิด", "ดิษฐ์", "ดิษ", "ดิบ", "ตู้", "ตู", "ถู่", "เต็ด",
+                        "ปูปิด", "ปูถิด", "ปูดิษฐ์", "ปูดิษ", "ปูติส", "ปู่ปิด", "ปู่ถิด", "ปู่ดิษฐ์",
+                        "ปู่ดิษ", "ผู้ปิด", "ผู้ถิด", "ผู้ดิษฐ์", "ผู้ดิษ", "พูดดี", "พูดปิด", "พูตู้",
+                        "ปะปิด", "ปะปลด", "ปะไฟ", "ปะเลย", "ปะได้", "ปะนะ", "ปะตาด", "ปะถาด",
+                        "ประติด", "ประถิด", "ประดิษฐ์", "ประดิษ", "ประดิบ", "ประถิต", "ปุ๊ปดิษฐ์",
+                        "ปุ๊ปติด", "ปุ๊บดิษฐ์", "ปุ๊บติด", "ปุ๊ปถิด", "ปุ๊บถิด", "ปู่ปิด", "ปู่ปลด",
+                        "ผู้ปิด", "ผู้ปลด", "พูปิด", "พูดปิด", "พูดปลด", "พูดไฟ", "ปิดปิด",
+                        "ปิดปะ", "ปิดปู่", "ปิดผู้", "ปิดพูด", "ปิดเพด", "ปิดเพิด", "บิ้ดปะ",
+                        "ปิดพัดลม", "ปิดพัด", "ปิดหม้อ", "ปิดถัง", "ปิดห้อง", "ปิดรถ", "ปิดพัด",
+                        "ปิดพับ", "ปิดพบ", "ปิดภาพ", "ปิดบาน", "ปิดบ้าน", "ปิดปาน", "ปิดป่าน",
+                        "ปิดปล้ำ", "ปิดหลอด", "ปิดหลอดไฟ", "ปิดระบบ", "ปิดประตูได้", "ปิดทันที",
+                        "ปิดสิ", "ปิดหน่อย", "ปิดให้หน่อย", "ปูปะ", "ปู่ปะ", "ผู้ปะ", "พูปะ",
+                        "ปะปิด", "ปะปลด", "ปะไฟ", "ปะเลย", "ปะได้", "ปะนะ", "ปะตาด", "ปะถาด",
+                        "บิ้ดปะ", "บิดปะ", "ปิ้ดปะ", "ปิดปะ", "ปะปิด", "ปะปลด", "ปะไฟ",
+                        "ปิดได้ไหม", "ปิดได้มั้ย", "ปิดซิ", "ปิดฉิ"
+                    ];
+
+                    const lamponKeywords = [
+    // 1. คำตรงและใกล้เคียง
+    "เปิดไฟบ้าน", "เปิดไปบ้าน", "เปิดไฟบาน", "เปิดไฟบ้า", "เปีดไฟบ้าน", "เปิดในบ้าน", "เปิดไอ้บ้าน",
+    
+    // 2. คำผวนและผวนเพี้ยน (ป้านไฟเดิด, บ้านไฟเปิด)
+    "ป้านไฟเดิด", "บ้านไฟเดิด", "เบิดไฟบ้าน", "บ้านไฟเปิด", "ไฟบ้านเปิด", "เบิดไฟบ่าน", "ป้านไฟเด้ด", 
+    "ป้ายไฟเดิด", "เดิดไฟบ้าน", "เดิดไฟบาน", "ปาดไฟเดิด", "ป้านไฟดาด", "บ้านไฟเดิด", "เปิดไฟเดิด", 
+    
+    // 3. คำเพี้ยนพยัญชนะ (บ/ป, ด/ท, ฟ/พ, ร/ล)
+    "เบิดไฟบ้าน", "เป็ดไฟบ้าน", "เบิดไดบ้าน", "เป็ดไดบ้าน", "เถิดไฟบ้าน", "เลิดไฟบ้าน", "ไปรไฟบ้าน", 
+    "เปิดใยบ้าน", "เฝิดไฟบ้าน", "เบิดไปบ้าน", "เบิดไฟบ้า", "เปิดไดบาน", "เป็ดไปบ้า", "เบิดไปบ้า", 
+    "เบิดไฟบ่าง", "เบิดไฟบ่าน", "เปิดไฟบา", "เบิดไฟบา", "เบิดไปบาน", "เป็ดไปบาน", "เบิดไฟบ้าน", 
+    "เบิ้ดไฟบ้าน", "ปิ๊ดไฟบ้าน", "เปริดไฟบ้าน", "เลิ่ดไฟบ้าน", "เริ่ดไฟบ้าน", "เปิดไฟบ้า", "เปิดไปบ่าง", 
+    "เบิ่ดไฟบ้า", "เบิดไปบ่าง", "เบิ้ดไปบ้าน", "เปิ้ดไฟบ้าน", "เปิ๊ดไฟบ้าน", "เปิดไฟบ้าง", "เปิดไปบ้าง", 
+    "เบิดไฟบ้าง", "เป็ดไฟบ้าง", "เถิดไฟบ้าง", "เลิดไฟบ้าง", "ไปรไฟบ้าง", "เปิดไฟบาง", "เป็ดไฟบาง",
+    
+    // 4. คำสั้น 2-3 พยางค์ (ลดทอนพยางค์)
+    "เปิดไฟ", "ไปเปิดไฟ", "ไปบ้าน", "บ้านเปิด", "เปิด", "เบิดไฟ", "ไปเบิดไฟ", 
+    "เปิดไฟนะ", "เปิดไฟสิ", "เปิดไปเลย", "เปิดไฟเร็ว", "เบิดไฟนะ", "เบิดไฟสิ", "ไปเบิดเลย",
+    
+    // 5. การสลับคำและวรรณยุกต์เพิ่มเติม (เพื่อให้ครบ 200 คำ)
+    "ป้านไฟดาต", "เบิดฟายบาน", "ป้านไฟเดิ้ด", "บ้านไฟเปิ่ด", "เฝิดใยบ้าน", "เปริดไดบ้าน", 
+    "เลิ้ดไปบ้า", "เบิ้ดไฟบ่าง", "เปิดไพบ้าน", "เปิดไฟบ้านหน่อย", "เปิดไฟบ้างนะ", "เปิดไฟสิคะ",
+    "เบิดไฟบ้านเลย", "เบิดไฟที", "เปิดไฟบ้าน", "เปิดไฟบ้างสิ", "เปิดไปบาน", "เปิดไปบ้าง", 
+    "เบิดไฟบ้าง", "เบิดไปบาน", "เปิดบาน", "เปิดบ้า", "เปิบไฟบ้าน", "เปิบไปบ้าน", "เบิบไฟบ้าน",
+    "เถิบไฟบ้าน", "เปิดไดบ้าน", "เปิดใยบ้าน", "เบิดใยบ้าน", "เบิดไอ้บ้าน", "เถิดไอ้บ้าน", "เฝิดไอ้บ้าน",
+    "ไปรไอ้บ้าน", "เปริดไอ้บ้าน", "เปิดไพ", "เบิดไพ", "เปิดไพนะ", "เบิดไพสิ",  
+    "เบิดบ้านนะ",  "เบิดบ้านสิ", "เปิดไฟป้าน", "เบิดไฟป้าน", "เปิดไฟปีน", "เบิดไฟปีน",
+    "เปิดใยป้าน", "เบิดใยป้าน", "เปิดบ้านไพ", "เบิดบ้านไพ", "เปิ่ดไฟบ้าน", "เปิ่ดไปบ้าน", 
+    "เบิ่ดไฟบ้าน", "เบิ่ดไปบ้าน", "เปิ๊ดไฟบ้าน", "เปิ๊ดไปบ้าน", "เบิ๊ดไฟบ้าน", "เบิ๊ดไปบ้าน",
+    "ป้านไฟเดิ่ด", "ป้านไฟเดิ๊ด", "ป้านไปเดิด", "ป้านไปเดิ่ด", "ป้านไปเดิ๊ด", "บ้านไปเดิด", 
+    "บ้านไปเดิ่ด", "บ้านไปเดิ๊ด", "ไฟเบิดบ้าน", "ไฟเป็ดบ้าน", "ไปเปิด", "ไปเบิด", "ไฟเปิด", "ไฟเบิด",
+    "เบิ่ดไฟ", "เบิ๊ดไฟ", "เปิ่ดไฟ", "เปิ๊ดไฟ", "บ้านไฟ", "บานไฟ", "เบานไฟ", "เบิ้ลไฟ",
+    "เปิด", "เบิด", "เปิ่ด", "เบิ่ด", "เปิ๊ด", "เบิ๊ด", "เปิดนะ", "เบิดนะ", "เปิดสิ", "เบิดสิ",
+   , "เบิดบ้านหน่อย", "ไปเปิดไฟหน่อย", "ไปเบิดไฟหน่อย", "เปิดไฟบา", "เบิดไฟบา",
+    "เปิดไฟมา", "เบิดไฟมา", "เปิดไฟแล้ว", "เบิดไฟแล้ว", "เปิดไฟล่ะ", "เบิดไฟล่ะ", "เปิดไฟดี",
+    "เบิดไฟดี", "เปิดไฟบ่อย", "เบิดไฟบ่อย", "เปิดไฟเยอะ", "เบิดไฟเยอะ", "เปิดไฟบ้างสิ", "เบิดไฟบ้างสิ",
+    "เปิดให้หน่อย", "เบิดให้หน่อย", "เปิดไฟให้", "เบิดไฟให้", "เปิดไปให้", "เบิดไปให้"
+];
+                    const lampoffKeywords = [
+    // 1. คำตรงและใกล้เคียง
+    "ปิดไฟบ้าน", "ปิ๊ดไฟบ้าน", "ปิดไปบ้าน", "ปิดไฟบาน", "ปิดไฟบ้า", "ปิดในบ้าน", "ปิดไอ้บ้าน", 
+    
+    // 2. คำผวนและผวนเพี้ยน (ป้านไฟดิด, บ้านไฟปิด)
+    "ป้านไฟดิด", "บ้านไฟดิด", "บิดไฟบ้าน", "บ้านไฟปิด", "ไฟบ้านปิด", "บิดไฟบ่าน", "ป้านไฟติ๊ด", 
+    "ป้ายไฟดิด", "ดิดไฟบ้าน", "ดิดไฟบาน", "ปาดไฟดิด", "ป้านไฟดาด", "บ้านไฟดิด", "บิดไฟดิด","บ้านไฟดับ","บ้านไปดิษฐ์",
+    
+    // 3. คำเพี้ยนพยัญชนะ (บ/ป, ด/ท, ฟ/พ, ร/ล)
+    "บิดไฟบ้าน", "พิษไฟบ้าน", "บิดไดบ้าน", "พิษไดบ้าน", "ถิดไฟบ้าน", "ลิดไฟบ้าน", "ไปรไฟบ้าน",
+    "ปิดใยบ้าน", "ผิดไฟบ้าน", "บิดไปบ้าน", "บิดไฟบ้า", "ปิดไดบาน", "พิษไปบ้า", "บิดไปบ้า",
+    "บิดไฟบ่าง", "บิดไฟบ่าน", "ปิดไฟบา", "บิดไฟบา", "บิดไปบาน", "พิษไปบาน", "บิดไฟบ้าน",
+    "บิ้ดไฟบ้าน", "ปิ๊ดไฟบ้าน", "ปลิดไฟบ้าน", "ลิ่ดไฟบ้าน", "ริ่ดไฟบ้าน", "บิดไฟบ้า", "ปิดไปบ่าง",
+    "บิ่ดไฟบ้า", "บิดไปบ่าง", "บิ้ดไปบ้าน", "ปิ้ดไฟบ้าน", "ปิ๊ดไฟบ้าน", "ปิดไฟบ้าง", "ปิดไปบ้าง",
+    "บิดไฟบ้าง", "พิษไฟบ้าง", "ถิดไฟบ้าง", "ลิดไฟบ้าง", "ไปรไฟบ้าง", "ปิดไฟบาง", "พิษไฟบาง",
+    
+    // 4. คำสั้น 2-3 พยางค์ (ลดทอนพยางค์)
+    "ปิดไฟ", "ไปปิดไฟ",  "ไปบ้าน", "บ้านปิด", "ปิด", "บิดไฟ", "ไปบิดไฟ", 
+    "ปิดไฟนะ", "ปิดไฟสิ", "ปิดไปเลย", "ปิดไฟเร็ว", "บิดไฟนะ", "บิดไฟสิ", "ไปบิดเลย",
+    
+    // 5. การสลับคำและวรรณยุกต์เพิ่มเติม (เพื่อให้ครบ 200 คำ)
+    "ป้านไฟดาต", "บิดฟายบาน", "ป้านไฟดิ๊ด", "บ้านไฟปิ่ด", "ผิดใยบ้าน", "ปลิดไดบ้าน", 
+    "ลิ้ดไปบ้า", "บิ้ดไฟบ่าง", "ปิดไพบ้าน", "ปิดไฟบ้านหน่อย", "ปิดไฟบ้างนะ", "ปิดไฟสิคะ",
+    "บิดไฟบ้านเลย", "บิดไฟที", "พิษไฟบ้าน", "ปิดไฟบ้างสิ", "ปิดไปบาน", "ปิดไปบ้าง", 
+    "บิดไฟบ้าง", "บิดไปบาน", "ปิดบาน", "ปิดบ้า", "ปิบไฟบ้าน", "ปิบไปบ้าน", "บิบไฟบ้าน",
+    "ถิบไฟบ้าน", "พิษไดบ้าน", "พิษใยบ้าน", "บิดใยบ้าน", "บิดไอ้บ้าน", "ถิดไอ้บ้าน", "ผิดไอ้บ้าน",
+    "ไปรไอ้บ้าน", "ปลิดไอ้บ้าน", "ปิดไพ", "บิดไพ", "ปิดไพนะ", "บิดไพสิ",  
+    "บิดบ้านนะ",  "บิดบ้านสิ", "ปิดไฟป้าน", "บิดไฟป้าน", "ปิดไฟปีน", "บิดไฟปีน",
+    "ปิดใยป้าน", "บิดใยป้าน",  "บิดบ้านไพ", "ปิ่ดไฟบ้าน", "ปิ่ดไปบ้าน", 
+    "บิ่ดไฟบ้าน", "บิ่ดไปบ้าน", "ปิ๊ดไฟบ้าน", "ปิ๊ดไปบ้าน", "บิ๊ดไฟบ้าน", "บิ๊ดไปบ้าน",
+    "ป้านไฟดิ่ด", "ป้านไฟดิ๊ด", "ป้านไปดิด", "ป้านไปดิ่ด", "ป้านไปดิ๊ด", "บ้านไปดิด", 
+    "บ้านไปดิ่ด", "บ้านไปดิ๊ด", "ไฟบิดบ้าน", "ไฟพิษบ้าน", "ไปปิด", "ไปบิด", "ไฟปิด", "ไฟบิด",
+    "บิ่ดไฟ", "บิ๊ดไฟ", "ปิ่ดไฟ", "ปิ๊ดไฟ", "บ้านไฟ", "บานไฟ", "เบานไฟ", "บิ้ลไฟ",
+    "ปิด", "บิด", "ปิ่ด", "บิ่ด", "ปิ๊ด", "บิ๊ด", "ปิดนะ", "บิดนะ", "ปิดสิ", "บิดสิ",
+     "บิดบ้านหน่อย", "ไปปิดไฟหน่อย", "ไปบิดไฟหน่อย", "ปิดไฟบา", "บิดไฟบา",
+    "ปิดไฟมา", "บิดไฟมา", "ปิดไฟแล้ว", "บิดไฟแล้ว", "ปิดไฟล่ะ", "บิดไฟล่ะ", "ปิดไฟดี",
+    "บิดไฟดี", "ปิดไฟบ่อย", "บิดไฟบ่อย", "ปิดไฟเยอะ", "บิดไฟเยอะ", "ปิดไฟบ้างสิ", "บิดไฟบ้างสิ",
+    "ปิดให้หน่อย", "บิดให้หน่อย", "ปิดไฟให้", "บิดไฟให้", "ปิดไปให้", "บิดไปให้"
+];
+
+    const transcriptElement = document.getElementById('transcript-text');
+    const commandElement = document.getElementById('mqtt-command-sent');
+    
+    // Update UI with the final transcript
+    if (transcriptElement) {
+        transcriptElement.textContent = lowerTranscript;
+    }
+
+    // 1. ตรวจสอบ 'lampon' ก่อน (เปิดไฟ)
+if (lamponKeywords.some(keyword => lowerTranscript === keyword)) {
+    commandToSend = "turnonlamp";
+} 
+// 2. ถ้าไม่ตรงกับ 'lampon' ค่อยตรวจสอบ 'lampoff' (ปิดไฟ)
+else if (lampoffKeywords.some(keyword => lowerTranscript === keyword)) {
+    commandToSend = "turnofflamp";  
+}
+// 3. ตรวจสอบ 'on' keywords
+else if (onKeywords.some(keyword  => lowerTranscript === keyword)) {
+    commandToSend = "opendoor";
+} 
+// 4. ตรวจสอบ 'off' keywords
+else if (offKeywords.some(keyword  => lowerTranscript === keyword)) {
+    commandToSend = "closedoor";
+}
+
+    if (commandToSend) {
+        publishCommand('commands', commandToSend);
+        if (commandElement) {
+            commandElement.textContent = commandToSend;
+        }
+        updatePageStatus(`เรียบร้อย`, "page-voice");
+    } else {
+        if (commandElement) {
+            commandElement.textContent = "---";
+        }
+        updatePageStatus(`ไม่สำเร็จ`, "page-voice");
+    }
+    
+    // Reset status text after processing
+    document.getElementById('voice-status-text').textContent = "กดค้างเพื่อพูด";
+}
+
+// Function to start recording
+window.startVoiceRecognition = function() {
+    // Check for browser support
+    if (!('webkitSpeechRecognition' in window)) {
+        showModal("Voice Command Error", "เบราว์เซอร์ของคุณไม่รองรับ Speech Recognition โปรดใช้ Google Chrome");
+        return;
+    }
+    
+    if (isRecording) return;
+    
+    // Stop any existing recognition instance to ensure a fresh start
+    if (recognition) {
+        recognition.stop();
+    }
+    
+    isRecording = true;
+
+    // Initialize recognition object
+    recognition = new webkitSpeechRecognition();
+    recognition.continuous = false; // Capture a single phrase
+    recognition.interimResults = true; // Get real-time results
+    recognition.lang = 'th-TH'; // Set language to Thai for better recognition
+
+    finalTranscript = '';
+    const statusText = document.getElementById('voice-status-text');
+    const recordBtn = document.getElementById('voice-record-btn');
+    const transcriptElement = document.getElementById('transcript-text');
+    
+    // Update UI for recording start
+    if (statusText) statusText.textContent = "กดค้างไว้เพื่อส่งข้อมูล"  ;
+    if (recordBtn) recordBtn.classList.add('bg-action-red', 'animate-pulse');
+    if (transcriptElement) transcriptElement.textContent = '...'; // Clear previous transcript
+
+    const statusDiv = document.getElementById('page-status-voice');
+        if (statusDiv) {
+            statusDiv.classList.remove('hidden'); // *** ทำให้ div แสดงผล ***
+            statusDiv.textContent = `กำลังประมวลผล`; // ใส่ข้อความสถานะ
+        }
+
+    recognition.onstart = () => {
+        console.log("Speech recognition started.");
+    };
+
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript;
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+        // Show interim results with '...' appended to indicate listening
+        if (transcriptElement) {
+             transcriptElement.textContent = finalTranscript + interimTranscript + '...';
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error('Speech Recognition Error:', event.error);
+        stopVoiceRecognition(true); // Stop but don't process transcript on error
+        updatePageStatus(`ข้อผิดพลาดในการรับเสียง: ${event.error}`, "page-voice");
+        document.getElementById('voice-status-text').textContent = "กดค้างเพื่อพูด";
+    };
+
+    recognition.onend = () => {
+        if (isRecording) { // If onend is called while still 'recording' (e.g., timeout), process the final transcript
+            stopVoiceRecognition(false);
+        }
+    };
+    
+    recognition.start();
+};
+
+// Function to stop recording and process the command
+window.stopVoiceRecognition = function(isError = false) {
+    if (!isRecording) return;
+    isRecording = false;
+    
+    // Stop the recognition service explicitly
+    if (recognition) {
+        // Disconnect the onend handler temporarily to prevent double processing/UI update if it was triggered by stop()
+        const oldOnEnd = recognition.onend;
+        recognition.onend = null; 
+        recognition.stop();
+        recognition.onend = oldOnEnd; // Restore if needed later, though not strictly required for this simple implementation
+    }
+    
+    const statusText = document.getElementById('voice-status-text');
+    const recordBtn = document.getElementById('voice-record-btn');
+
+    if (statusText) statusText.textContent = "กำลังประมวลผล...";
+    if (recordBtn) recordBtn.classList.remove('bg-action-red', 'animate-pulse');
+    
+    if (!isError && finalTranscript.trim().length > 0) {
+        handleVoiceCommand(finalTranscript);
+    } else if (!isError) {
+        document.getElementById('transcript-text').textContent = 'ไม่พบเสียงพูด';
+        document.getElementById('mqtt-command-sent').textContent = '---';
+        updatePageStatus('ไม่พบเสียงพูด', "page-voice");
+        document.getElementById('voice-status-text').textContent = "กดค้างเพื่อพูด";
+    }
+    
+    if (isError) {
+        document.getElementById('mqtt-command-sent').textContent = '---';
+        document.getElementById('voice-status-text').textContent = "กดค้างเพื่อพูด";
+    }
+};
+// END: เพิ่มโค้ดใหม่สำหรับ Voice Recognition
+
+
+
             let activeMode = 'none';
             let isConnected = false;
 
@@ -812,6 +1216,11 @@
                 } else if (pageId === 'page-message') {
                     // ส่งคำสั่ง mode=5 สำหรับหน้าข้อความ
                     publishCommand('commands', 'mode=5');
+                // START: เพิ่มโค้ดใหม่
+                } else if (pageId === 'page-voice') {
+                    // ส่งคำสั่ง mode=6 สำหรับหน้า Voice
+                    publishCommand('commands', 'mode=6');
+                // END: เพิ่มโค้ดใหม่
                 }
             } else {
                 console.error(`Page with ID ${pageId} not found.`);
@@ -884,6 +1293,10 @@
                     statusElement = document.getElementById('page-status-pins');
                 } else if (pageId === 'page-pin-status') {
                     statusElement = document.getElementById('page-status-pin-status');
+                // START: เพิ่มโค้ดใหม่
+                } else if (pageId === 'page-voice') {
+                    statusElement = document.getElementById('page-status-voice');
+                // END: เพิ่มโค้ดใหม่
                 }
                     
                 if (statusElement) {
@@ -1556,7 +1969,64 @@
             
         };
 
+        //ส่วนของเมนู
         
+// โค้ดใหม่สำหรับ Dropdown Menu
+document.addEventListener('DOMContentLoaded', () => {
+    const menuToggleBtn = document.getElementById('menu-toggle-btn');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const navButtons = document.querySelectorAll('#dropdown-menu button');
+    
+    // ฟังก์ชันเปิด/ปิดเมนู
+    const toggleMenu = (event) => {
+        // ป้องกันการทำงานซ้ำซ้อน
+        if (event) {
+            event.stopPropagation();
+        }
+        
+        const isOpen = dropdownMenu.classList.contains('translate-x-0');
+        
+        if (isOpen) {
+            // ปิดเมนู
+            dropdownMenu.classList.remove('translate-x-0');
+            dropdownMenu.classList.add('-translate-x-full');
+            menuOverlay.classList.remove('opacity-50');
+            menuOverlay.classList.add('hidden');
+            
+        } else {
+            // เปิดเมนู
+            dropdownMenu.classList.remove('-translate-x-full');
+            dropdownMenu.classList.add('translate-x-0');
+            menuOverlay.classList.remove('hidden');
+            
+            // ใช้ setTimeout เพื่อให้เกิด transition หลังจากเปลี่ยน display
+            setTimeout(() => {
+                 menuOverlay.classList.add('opacity-50'); 
+            }, 50);
+        }
+    };
+
+    // 1. ผูก Event กับปุ่ม Hamburger
+    if (menuToggleBtn) {
+        menuToggleBtn.addEventListener('click', toggleMenu);
+    }
+    
+    // 2. ผูก Event กับ Overlay เพื่อปิดเมนูเมื่อคลิกนอกพื้นที่
+    if (menuOverlay) {
+        menuOverlay.addEventListener('click', toggleMenu);
+    }
+    
+    // 3. ผูก Event กับปุ่มนำทางใน Dropdown เพื่อปิดเมนูหลังคลิก
+    // การเรียก showPage(event, pageId) จะเกิดขึ้นอัตโนมัติจาก onclick ใน HTML
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // หน่วงเวลาเล็กน้อยก่อนปิด เพื่อให้ผู้ใช้เห็นว่าคลิกไปแล้ว
+            setTimeout(toggleMenu, 150); 
+        });
+    });
+    
+});
         
         
         </script>
