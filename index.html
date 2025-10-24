@@ -78,14 +78,15 @@
         }
         .main-content {
             width: 100%;
-            max-width: 600px;
+            /*max-width: 600px; /* จำกัดความกว้างบนอุปกรณ์ขนาดเล็ก */   
             background-color: #E8E2E6;
             border-radius: 1.5rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             padding: 2.5rem 1.5rem;
             transition: transform 0.3s ease-in-out;
         }
-
+        
+        
        
         .hidden-page {
             display: none;
@@ -379,6 +380,40 @@
                 .pin-status-circle.high {
                     background-color: #34d399; /* A light green for HIGH status */
                 }
+/*โค้ดจากเวป*/
+
+
+.parent {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(5, 1fr); /* 5 แถว แบ่งเท่าๆ กัน */
+    gap: 8px;
+    
+}
+    
+.div1 {
+    grid-column: span 4 / span 4;
+    grid-row: span 3 / span 3;
+}
+
+.div2 {
+    grid-column: span 4 / span 4;
+    grid-row: span 5 / span 5; /* กำหนดให้กิน 5 แถว */
+    grid-column-start: 5;
+    
+}
+
+.div3 {
+    grid-column: span 4 / span 4;
+    grid-row-start: 4;
+}
+
+.div4 {
+    grid-column: span 4 / span 4;
+    grid-row-start: 5;
+}
+        
+        
         
     </style>
 </head>
@@ -435,30 +470,24 @@
 
 <div id="menu-overlay" class="fixed inset-0 bg-black opacity-0 z-40 hidden transition-opacity duration-300"></div>
         
-        
-       
-    
-
-    
-
-    
-    
+      
 
     <div class="container-wrapper">
         <div class="main-content **pt-16**">
-            <section id="page-connect" class="space-y-4">
-                <h2 class="text-xl font-semibold text-center text-new-pastel-text">เชื่อมต่อกับ Micro:bit</h2>
-                <div class="p-4 bg-new-pastel-card rounded-lg shadow-sm">
-                    <label for="uniqueId" class="block text-sm font-medium text-new-pastel-text">ตั้งค่า ID ให้ตรงกับ Microbit</label>
-                    <input type="text" id="uniqueId" value="microbit-control" placeholder="ใส่ ID เฉพาะที่นี่"
-                        class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-sm focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
-                </div>
-                <button id="connectBtn"
-                    class="w-full bg-gradient-primary text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
-                    เชื่อมต่อกับ Broker
-                </button>
-                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status"></div>
-            </section>
+            <section id="page-connect" class="mx-auto w-full max-w-xl">
+    <h2 class="text-xl font-semibold text-center text-new-pastel-text">เชื่อมต่อกับ Micro:bit</h2>
+    
+    <div class="p-4 bg-new-pastel-card rounded-lg shadow-sm"> 
+        <label for="uniqueId" class="block text-sm font-medium text-new-pastel-text">ตั้งค่า ID ให้ตรงกับ Microbit</label>
+        <input type="text" id="uniqueId" value="microbit-control" placeholder="ใส่ ID เฉพาะที่นี่"
+            class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-sm focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
+    </div>
+    <button id="connectBtn"
+        class="w-full bg-gradient-primary text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+        Connect
+    </button>
+    <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status"></div>
+</section>
 
             <section id="page-gamepad" class="hidden-page">
                 <h2 class="text-xl font-semibold text-center text-new-pastel-text mb-4">Web Gamepad</h2>
@@ -487,201 +516,409 @@
                 <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-gamepad"></div>
             </section>
 
-            <section id="page-pins" class="hidden-page space-y-4">
-                <h2 class="text-xl font-semibold text-new-pastel-text">Pin Control</h2>
-                <p class="text-gray-500 text-sm">
-                    ใช้สวิตช์สำหรับ Digital Pins (เปิด/ปิด)
-                </p>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="pin-control-container">
-                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
-                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 0</span>
-                        <div id="status-P0" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P0" class="pin-control-toggle" onchange="handleToggleChange('P0', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
-                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 1</span>
-                        <div id="status-P1" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P1" class="pin-control-toggle" onchange="handleToggleChange('P1', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
-                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 2</span>
-                        <div id="status-P2" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P2" class="pin-control-toggle" onchange="handleToggleChange('P2', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
-                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 8</span>
-                        <div id="status-P8" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P8" class="pin-control-toggle" onchange="handleToggleChange('P8', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
-                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 12</span>
-                        <div id="status-P12" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P12" class="pin-control-toggle" onchange="handleToggleChange('P12', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
-                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 13</span>
-                        <div id="status-P13" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P13" class="pin-control-toggle" onchange="handleToggleChange('P13', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
-                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 14</span>
-                        <div id="status-P14" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P14" class="pin-control-toggle" onchange="handleToggleChange('P14', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
-                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 15</span>
-                        <div id="status-P15" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P15" class="pin-control-toggle" onchange="handleToggleChange('P15', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="bg-new-pastel-card rounded-lg p-3 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
-                        <span class="text-base font-semibold text-new-pastel-text whitespace-nowrap">Pin 16</span>
-                        <div id="status-P16" class="pin-status-circle w-3 h-3 rounded-full mr-2 low"></div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-P16" class="pin-control-toggle" onchange="handleToggleChange('P16', this.checked)">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pins"></div>
-            </section>
+<section id="page-pins" class="hidden-page p-4 space-y-4">
+    <h2 class="text-xl font-semibold text-new-pastel-text text-center">Pin Control</h2>
+    <p class="text-gray-500 text-sm text-center">
+        ใช้สวิตช์สำหรับ Digital Pins (เปิด/ปิด) และดูสถานะ Pin
+    </p>
+    
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-lg mx-auto" id="pin-control-container">
+        
+        <div class="bg-new-pastel-card rounded-lg p-2 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2"> 
+                <span class="text-sm font-semibold text-new-pastel-text">Pin 0</span>
+                <div id="status-P0" class="pin-status-circle w-3 h-3 rounded-full low"></div> 
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-P0" class="pin-control-toggle" onchange="handleToggleChange('P0', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="bg-new-pastel-card rounded-lg p-2 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2"> 
+                <span class="text-sm font-semibold text-new-pastel-text">Pin 1</span>
+                <div id="status-P1" class="pin-status-circle w-3 h-3 rounded-full low"></div> 
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-P1" class="pin-control-toggle" onchange="handleToggleChange('P1', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="bg-new-pastel-card rounded-lg p-2 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2"> 
+                <span class="text-sm font-semibold text-new-pastel-text">Pin 2</span>
+                <div id="status-P2" class="pin-status-circle w-3 h-3 rounded-full low"></div> 
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-P2" class="pin-control-toggle" onchange="handleToggleChange('P2', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="bg-new-pastel-card rounded-lg p-2 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2"> 
+                <span class="text-sm font-semibold text-new-pastel-text">Pin 8</span>
+                <div id="status-P8" class="pin-status-circle w-3 h-3 rounded-full low"></div> 
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-P8" class="pin-control-toggle" onchange="handleToggleChange('P8', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="bg-new-pastel-card rounded-lg p-2 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2"> 
+                <span class="text-sm font-semibold text-new-pastel-text">Pin 12</span>
+                <div id="status-P12" class="pin-status-circle w-3 h-3 rounded-full low"></div> 
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-P12" class="pin-control-toggle" onchange="handleToggleChange('P12', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="bg-new-pastel-card rounded-lg p-2 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2"> 
+                <span class="text-sm font-semibold text-new-pastel-text">Pin 13</span>
+                <div id="status-P13" class="pin-status-circle w-3 h-3 rounded-full low"></div> 
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-P13" class="pin-control-toggle" onchange="handleToggleChange('P13', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="bg-new-pastel-card rounded-lg p-2 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2"> 
+                <span class="text-sm font-semibold text-new-pastel-text">Pin 14</span>
+                <div id="status-P14" class="pin-status-circle w-3 h-3 rounded-full low"></div> 
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-P14" class="pin-control-toggle" onchange="handleToggleChange('P14', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="bg-new-pastel-card rounded-lg p-2 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2"> 
+                <span class="text-sm font-semibold text-new-pastel-text">Pin 15</span>
+                <div id="status-P15" class="pin-status-circle w-3 h-3 rounded-full low"></div> 
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-P15" class="pin-control-toggle" onchange="handleToggleChange('P15', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="bg-new-pastel-card rounded-lg p-2 shadow-md border border-new-pastel-accent-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2"> 
+                <span class="text-sm font-semibold text-new-pastel-text">Pin 16</span>
+                <div id="status-P16" class="pin-status-circle w-3 h-3 rounded-full low"></div> 
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle-P16" class="pin-control-toggle" onchange="handleToggleChange('P16', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+    </div>
+    <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pins"></div>
+</section>
             
-            <section id="page-pin-status" class="hidden-page">
-                <h2 class="text-xl font-semibold text-center text-new-pastel-text mb-4">สถานะ Pin ของ Micro:bit</h2>
-              
-                <div class="mt-8 text-center">
-                    <button id="requestPinStatusBtn"
-                        class="bg-new-pastel-accent-2 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
-                        ขอข้อมูลสถานะ Pin
-                    </button>
+<section id="page-pin-status" class="hidden-page p-4"> 
+    <h2 class="text-xl font-semibold text-center text-new-pastel-text mb-4">Sensor Status Dashboard</h2>
+    <div class="parent">
+    <div class="div1">
+            <div id="sensor-dashboard" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4"> 
+                
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Distance</p>
+                    <p id="sensor-distance" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">cm</p>
                 </div>
-                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pin-status"></div>
-                <div id="pin-status-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    </div>
-                <div class="font-medium text-new-pastel-text text-center mt-4" id="page-status-pin-status"></div>
                 
-            </section>
-            <section id="page-message" class="hidden-page">
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Temperature</p>
+                    <p id="sensor-temperature" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">°C</p>
+                </div>
+
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Light Level</p>
+                    <p id="sensor-light_level" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">0-255</p>
+                </div>
                 
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Sound Level</p>
+                    <p id="sensor-sound_level" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">0-255</p>
+                </div>
+                
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Acc X</p>
+                    <p id="sensor-acceleration_x" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">mg</p>
+                </div>
+                
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Acc Y</p>
+                    <p id="sensor-acceleration_y" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">mg</p>
+                </div>
+
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Acc Z</p>
+                    <p id="sensor-acceleration_z" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">mg</p>
+                </div>
+                
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Rotation Roll</p>
+                    <p id="sensor-rotation_roll" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">Degrees</p>
+                </div>
+                
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Rotation Pitch</p>
+                    <p id="sensor-rotation_pitch" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">Degrees</p>
+                </div>
+
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Heading</p>
+                    <p id="sensor-heading" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">Degrees</p>
+                </div>
+
+                <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                    <p class="text-sm font-medium text-new-pastel-text/80">Magnetic</p>
+                    <p id="sensor-magnetic_strength" class="text-3xl font-bold text-new-pastel-accent-1 mt-1">N/A</p>
+                    <p class="text-xs text-new-pastel-text/60">µT (approx)</p>
+                </div>
+                
+                
+            </div>
+    </div>
+    
+   <div class="div2 flex flex-col">
+       
+    <div class="bg-new-pastel-card rounded-lg p-4 shadow-md w-full flex flex-col flex-grow"> 
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-new-pastel-text">Message Log</h3>
+            <button id="clearLogBtn-pin" class="bg-red-500 text-white font-bold py-1 px-3 rounded-lg text-sm shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                Clear
+            </button>
+        </div>
+        <div id="message-log-container-pin" class="bg-white p-4 rounded-md overflow-y-scroll text-sm font-mono text-new-pastel-text w-full flex-grow">
+        </div>
+    </div>
+    
+</div>
+
+    <div class="div3">
+            <h4 class="text-md font-bold text-new-pastel-text mb-3">Analog Pin Readings (0/1)</h4>
+            <div class="sensor-card grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 ">
+
+                        <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                            <p class="text-xs text-new-pastel-text/80">P0</p>
+                            <p id="sensor-analog_pin0" class="text-xl font-bold text-new-pastel-text">N/A</p>
+                        </div>
+                       <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                            <p class="text-xs text-new-pastel-text/80">P1</p>
+                            <p id="sensor-analog_pin1" class="text-xl font-bold text-new-pastel-text">N/A</p>
+                        </div>
+                        <div class="sensor-card bg-new-pastel-card rounded-xl p-4 shadow-lg border border-new-pastel-accent-2">
+                            <p class="text-xs text-new-pastel-text/80">P2</p>
+                            <p id="sensor-analog_pin2" class="text-xl font-bold text-new-pastel-text">N/A</p>
+                        </div>
+                    
+            </div>
+    </div>
+    <div class="div4">
+         <h4 class="text-md font-bold text-new-pastel-text mb-3">Digital Pin Readings (0/1)</h4>
+        <div class="bg-pin-digital-group rounded-xl p-4 shadow-lg 2">
                
-                
-                            <div class="p-4 rounded-lg shadow-none bg-new-pastel-card">
-                                    <h2 class="text-2xl font-bold mb-4 text-new-pastel-text">รับส่งข้อมูล</h2>
-                                    <div class="flex flex-col sm:flex-row items-center justify-between mb-4 space-y-2 sm:space-y-0">
-                                        <button id="show-shortcuts-btn" class="bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 w-full sm:w-auto">
-                                            Shortcut
-                                        </button>
-                                        <div class="relative w-full sm:w-auto"> 
-                                            <label for="presetNameInput" class="sr-only">ชื่อชุดข้อความ (Preset Name)</label>
-                                            <input type="text" id="presetNameInput" placeholder="ตั้งชื่อ Preset" class="mt-1 block w-full rounded-md border-new-pastel-accent-2 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-8 p-4 rounded-lg shadow-none bg-new-pastel-card">
-                                        <div class="flex justify-between items-center mb-4">
-                                            <h3 class="text-lg font-bold text-new-pastel-text">Message Log</h3>
-                                            <button id="clearLogBtn" class="bg-red-500 text-white font-bold py-1 px-3 rounded-lg text-sm shadow-none transition duration-300 ease-in-out hover:opacity-90">
-                                                Clear
-                                            </button>
-                                        </div>
-                                        <div id="message-log-container" class="bg-white p-4 rounded-md h-64 overflow-y-scroll text-sm font-mono text-new-pastel-text border border-new-pastel-accent-3">
-                                            </div>
-                                    </div>
-
-                                    <div id="message-list-container" class="space-y-4">
-                                    </div>
-
-                                    <div class="flex items-center space-x-2 mt-4">
-                                        <button id="addMessageBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
-                                            + Add Message
-                                        </button>
-                                        <button id="saveMessagesBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
-                                            Save
-                                        </button>
-                                        
-                                       
-                                    </div>
-
-                                    <div class="mt-8">
-                                        <label for="presetSelector" class="block text-sm font-medium text-new-pastel-text">Preset</label>
-                                        <div class="flex items-center mt-1 space-x-2">
-                                            <select id="presetSelector" class="block w-full rounded-md border-gray-300 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
-                                            </select>
-                                            <button id="loadPresetBtn" class="bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
-                                                Load
-                                            </button>
-                                            <button id="deletePresetBtn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-8">
-                                        <h3 class="text-lg font-bold mb-2 text-new-pastel-text">Export/Import</h3>
-                                        <textarea id="shareDataTextarea" rows="4" class="block w-full rounded-md border-gray-300 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text" placeholder="วางข้อมูล preset ที่นี่เพื่อนำเข้า"></textarea>
-                                        <div class="flex items-center space-x-2 mt-2">
-                                            <button id="exportBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
-                                                Export
-                                            </button>
-                                            <button id="importBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90">
-                                                Import
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                              
-                                
-                               
-                        </section>
-
-            <section id="page-shortcuts" class="hidden-page">
-                <div class="p-4 rounded-lg shadow-sm bg-new-pastel-card">
-                    <h2 class="text-2xl font-bold mb-6 text-new-pastel-text">Shortcut</h2>
-                    <div id="shortcut-buttons-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-9 gap-3 text-center">
+                    
+                    <div class="p-1 rounded-lg sensor-card bg-pin-low">
+                        <p class="text-xs text-new-pastel-text/80">P0</p>
+                        <p id="sensor-digital_pin0" class="text-lg font-bold text-new-pastel-text">N/A</p>
                     </div>
-
-                    <div class="mt-8 p-4 rounded-lg shadow-none bg-new-pastel-card">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-bold text-new-pastel-text">Message Log</h3>
-                            <button id="clearLogBtn-shortcut" class="bg-red-500 text-white font-bold py-1 px-3 rounded-lg text-sm shadow-none transition duration-300 ease-in-out hover:opacity-90">
-                                Clear
-                            </button>
-                        </div>
-                        <div id="message-log-container-shortcut" class="bg-white p-4 rounded-md h-48 overflow-y-scroll text-sm font-mono text-new-pastel-text border border-new-pastel-accent-3">
-                        </div>
+                    <div class="p-1 rounded-lg sensor-card bg-pin-low">
+                        <p class="text-xs text-new-pastel-text/80">P1</p>
+                        <p id="sensor-digital_pin1" class="text-lg font-bold text-new-pastel-text">N/A</p>
                     </div>
-
-                    <button id="back-to-message-btn" class="mt-8 bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
-                        Back
-                    </button>
+                    <div class="p-1 rounded-lg sensor-card bg-pin-low">
+                        <p class="text-xs text-new-pastel-text/80">P2</p>
+                        <p id="sensor-digital_pin2" class="text-lg font-bold text-new-pastel-text">N/A</p>
+                    </div>
+                    <div class="p-1 rounded-lg sensor-card bg-pin-low">
+                        <p class="text-xs text-new-pastel-text/80">P8</p>
+                        <p id="sensor-digital_pin8" class="text-lg font-bold text-new-pastel-text">N/A</p>
+                    </div>
+                    <div class="p-1 rounded-lg sensor-card bg-pin-low">
+                        <p class="text-xs text-new-pastel-text/80">P12</p>
+                        <p id="sensor-digital_pin12" class="text-lg font-bold text-new-pastel-text">N/A</p>
+                    </div>
+                    <div class="p-1 rounded-lg sensor-card bg-pin-low">
+                        <p class="text-xs text-new-pastel-text/80">P13</p>
+                        <p id="sensor-digital_pin13" class="text-lg font-bold text-new-pastel-text">N/A</p>
+                    </div>
+                    <div class="p-1 rounded-lg sensor-card bg-pin-low">
+                        <p class="text-xs text-new-pastel-text/80">P14</p>
+                        <p id="sensor-digital_pin14" class="text-lg font-bold text-new-pastel-text">N/A</p>
+                    </div>
+                    <div class="p-1 rounded-lg sensor-card bg-pin-low">
+                        <p class="text-xs text-new-pastel-text/80">P15</p>
+                        <p id="sensor-digital_pin15" class="text-lg font-bold text-new-pastel-text">N/A</p>
+                    </div>
+                    <div class="p-1 rounded-lg sensor-card bg-pin-low">
+                        <p class="text-xs text-new-pastel-text/80">P16</p>
+                        <p id="sensor-digital_pin16" class="text-lg font-bold text-new-pastel-text">N/A</p>
+                    </div>
+                    
                 </div>
-            </section>
+            </div>
+    </div>
+</div>
+  
+    
 
-           <section id="page-voice" class="hidden-page space-y-8 text-center">
+        
+        
+    
+</section>
+
+
+
+
+
+<section id="page-message" class="hidden-page p-4">
+    
+   
+
+    <div class="grid grid-cols-8 grid-rows-5 h-[90vh] gap-4">
+        
+       <div class="col-span-4 row-start-1 grid grid-cols-4 gap-2 p-3 bg-new-pastel-card rounded-lg shadow-md  items-center">
+    
+    <button id="show-shortcuts-btn" class="bg-new-pastel-accent-2 text-white font-bold h-full py-2 px-1 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 w-full col-span-1">
+        แสดงคำสั่งลัด
+    </button>
+    
+    <div class="flex flex-col h-full justify-between col-span-1"> 
+        <label for="presetNameInput" class="block text-sm font-medium text-new-pastel-text mb-1">ตั้งชื่อ Preset</label>
+        <input type="text" id="presetNameInput" placeholder="ตั้งชื่อ Preset" class="block w-full rounded-md border-new-pastel-accent-2 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text flex-grow">
+    </div>
+    
+    <button id="saveMessagesBtn" class="bg-new-pastel-accent-1 text-white font-bold h-full py-2 px-1 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 w-full col-span-1">
+        Save Preset
+    </button>
+   
+    <button id="addMessageBtn" class="bg-new-pastel-accent-1 text-white font-bold h-full py-2 px-1 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 w-full col-span-1">
+        + Add Message
+    </button>
+</div>
+        
+        <div class="col-span-4 row-span-3 row-start-2 bg-new-pastel-card rounded-lg p-4 shadow-lg  flex flex-col">
+            <h3 class="text-lg font-bold mb-2 text-new-pastel-text">สร้างข้อมูล</h3>
+            
+            
+            
+            <div id="message-list-container" class="flex-grow bg-new-pastel-card p-2 rounded-md overflow-y-scroll text-sm ">
+                
+            </div>
+        </div>
+
+        <div class="col-span-4 row-start-5 bg-new-pastel-card rounded-lg p-4 shadow-lg ">
+            <label for="presetSelector" class="block text-sm font-medium text-new-pastel-text mb-1">Load Preset</label>
+            <div class="flex items-center space-x-2">
+                <select id="presetSelector" class="block w-full rounded-md border-gray-300 shadow-none focus:border-new-pastel-accent-1 focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text">
+                    <option value="">-- เลือก Preset --</option>
+                </select>
+                <button id="loadPresetBtn" class="bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 flex-shrink-0">
+                    Load
+                </button>
+                <button id="deletePresetBtn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 flex-shrink-0">
+                    Delete
+                </button>
+            </div>
+        </div>
+
+
+        <div class="col-span-4 row-span-3 col-start-5 row-start-1 bg-new-pastel-card rounded-lg p-4 shadow-lg  flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-new-pastel-text">Message Log</h3>
+                <button id="clearLogBtn-message" class="bg-red-500 text-white font-bold py-1 px-3 rounded-lg text-sm shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                    Clear
+                </button>
+            </div>
+            <div id="message-log-container-message" class="bg-white p-4 rounded-md flex-grow overflow-y-scroll text-sm font-mono text-new-pastel-text ">
+            </div>
+        </div>
+        
+        <div class="col-span-4 row-span-2 col-start-5 row-start-4 bg-new-pastel-card rounded-lg p-4 shadow-lg  flex flex-col">
+         <h3 class="text-lg font-bold mb-2 text-new-pastel-text">Export/Import Preset)</h3>
+    
+         <textarea id="shareDataTextarea" rows="2" class="block w-full rounded-md border-gray-300 shadow-none  focus:ring-new-pastel-accent-1 sm:text-sm p-2 bg-white text-new-pastel-text flex-grow resize-none" placeholder="วางข้อมูล preset ที่นี่เพื่อนำเข้า"></textarea>
+    
+    <div class="flex gap-2 mt-2"> 
+        <button id="exportBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 flex-1">
+            Export
+        </button>
+        <button id="importBtn" class="bg-new-pastel-accent-1 text-white font-bold py-2 px-4 rounded-lg shadow-none transition duration-300 ease-in-out hover:opacity-90 flex-1">
+            Import
+        </button>
+    </div>
+</div>
+
+    </div>
+</section>
+    
+    
+    
+  
+
+    
+
+    
+
+<section id="page-shortcuts" class="hidden-page p-4">
+    <div class="max-w-4xl mx-auto"> 
+        
+        <h2 class="text-2xl font-bold mb-6 text-new-pastel-text text-center">คำสั่งลัด / Shortcuts</h2>
+        
+        <div class="p-4 rounded-lg shadow-lg bg-new-pastel-card ">
+            <h3 class="text-xl font-semibold mb-4 text-new-pastel-text">รายการคำสั่ง</h3>
+            
+            <div id="shortcut-buttons-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                
+                </div>
+        </div>
+
+        <div class="mt-8 p-4 rounded-lg shadow-lg bg-new-pastel-card ">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-new-pastel-text">Message Log (Shortcut)</h3>
+                <button id="clearLogBtn-shortcut" class="bg-red-500 text-white font-bold py-1 px-3 rounded-lg text-sm shadow-none transition duration-300 ease-in-out hover:opacity-90">
+                    Clear
+                </button>
+            </div>
+            <div id="message-log-container-shortcut" class="bg-white p-4 rounded-md h-48 overflow-y-scroll text-sm font-mono text-new-pastel-text ">
+            </div>
+        </div>
+
+        <button id="back-to-message-btn" class="mt-8 bg-new-pastel-accent-2 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out hover:opacity-90">
+            ย้อนกลับ
+        </button>
+    </div>
+</section>
+
+
+
+
+    <section id="page-voice" class="hidden-page space-y-8 text-center">
     <h2 class="text-xl font-semibold text-new-pastel-text">Voice Command</h2>
     <div class="p-6 bg-new-pastel-card rounded-xl shadow-lg flex flex-col items-center space-y-6">
         <button id="voice-record-btn" class="w-24 h-24 rounded-full bg-new-pastel-accent-1 text-white font-bold text-lg shadow-xl transition duration-300 ease-in-out hover:bg-new-pastel-accent-2 flex items-center justify-center transform active:scale-95"
@@ -1345,6 +1582,8 @@ window.stopVoiceRecognition = function(isError = false) {
             }
 
             function onConnect() {
+
+                //logMessage("เชื่อมต่อกับ MQTT Broker สำเร็จ!"); // <<-- ใช้ฟังก์ชันนี้
                 console.log("Connected to MQTT Broker.");
                 isConnected = true;
                 updateConnectionStatus("สถานะ: เชื่อมต่อแล้ว", "green");
@@ -1432,126 +1671,130 @@ window.stopVoiceRecognition = function(isError = false) {
                     }
                 }
             }
-        // Add this new function inside the <script> tag to update the message log
-        function addLogMessage(message) {
-            const logContainerMain = document.getElementById('message-log-container');
-            const logContainerShortcut = document.getElementById('message-log-container-shortcut');
+        
+        
+                    // --- MQTT handling logic (updated to be robust and use a single log system) ---
+function onMessageArrived(message) {
+    const topic = message.destinationName;
+    const payload = message.payloadString;
 
-            const timestamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            logEntry.classList.add('mb-1');
-            logEntry.innerHTML = `<span class="text-gray-500">[${timestamp}]</span> ${message}`;
 
-            // Add the log entry to the main message page
-            if (logContainerMain) {
-                logContainerMain.appendChild(logEntry.cloneNode(true)); // Use cloneNode to add to a new parent
-                logContainerMain.scrollTop = logContainerMain.scrollHeight;
+    const uniqueId = document.getElementById('uniqueId').value;
+    
+    // NEW: Handle sensor status messages from <uniqueId>/status
+    if (topic === `${uniqueId}/status`) {
+        try {
+            const data = JSON.parse(payload);
+            
+            // Check if data.data exists and is in "key:value" format
+            if (data.data && typeof data.data === 'string') {
+                const parts = data.data.split(':');
+                if (parts.length === 2) {
+                    const sensorName = parts[0].trim();
+                    const rawValue = parts[1].trim();
+                    let value;
+
+                    // Try to parse as a number, if fails, keep as string
+                    value = isNaN(parseFloat(rawValue)) ? rawValue : parseFloat(rawValue);
+
+                    // Update sensorState if the property exists
+                    if (sensorState.hasOwnProperty(sensorName)) {
+                        sensorState[sensorName] = value;
+                        updateSensorDashboard(); // Update the display when new data arrives
+                    }
+                }
+            }
+        } catch (e) {
+            logMessage(`[Error] Failed to parse JSON or sensor data in status message: ${e.message}`);
+        }
+    }
+
+    console.log(`Received message on topic "${topic}": ${payload}`);
+    
+    // ใช้อิเรเตอร์เดียวเพื่อจัดการทั้งการ Parse และ Logic ทั้งหมด
+    try {
+        // 1. พยายาม Parse JSON ก่อนเสมอ (ถ้าข้อมูลไม่ใช่ JSON จะเข้าสู่ catch block)
+        const data = JSON.parse(payload);
+        
+        let logged = false; // Flag เพื่อตรวจสอบว่ามีการ Log ข้อความไปแล้วหรือไม่
+
+        // --- 1.1 Custom Micro:bit Data Logging Logic (Your Requirement) ---
+        if (topic === "microbit-control/status" && data.data) {
+            const dataParts = data.data.split(':'); 
+            
+            // *************************************************************
+            // ** ส่วนที่แก้ไข: ตรวจสอบความยาวของ dataParts เพื่อป้องกัน Error **
+            // *************************************************************
+            if (dataParts.length > 1) { 
+                // ข้อความรูปแบบ Key:Value (เช่น temperature:26)
+                const dataKey = dataParts[0].trim();
+                const dataValue = dataParts[1].trim();
+                
+                const formattedMessage = `[ Micro:bit ] ${dataKey} : ${dataValue}`;
+                logMessage(formattedMessage);
+            } else {
+                // ข้อความสถานะแบบง่ายๆ (เช่น ok)
+                const simpleStatus = dataParts[0].trim();
+                const formattedMessage = `[ Micro:bit ] ${simpleStatus}`;
+                logMessage(formattedMessage);
             }
 
-            // Add the log entry to the shortcut page
-            if (logContainerShortcut) {
-                logContainerShortcut.appendChild(logEntry);
-                logContainerShortcut.scrollTop = logContainerShortcut.scrollHeight;
-            }
+            logged = true;
         }
 
-        // Add this event listener to the existing window.onload or DOMContentLoaded block
-        document.addEventListener('DOMContentLoaded', () => {
-            // ... (existing code for other event listeners) ...
-
-            const clearLogBtnMain = document.getElementById('clearLogBtn');
-            if (clearLogBtnMain) {
-                clearLogBtnMain.addEventListener('click', () => {
-                    const logContainer = document.getElementById('message-log-container');
-                    if (logContainer) {
-                        logContainer.innerHTML = '';
-                        addLogMessage('Log cleared.');
-                    }
-                });
+        // --- 1.2 Pin Status Update Logic (เดิมอยู่ใน try/catch ตัวที่สอง) ---
+        if (topic.includes('status/pin')) {
+            const parts = topic.split('/');
+            const pinId = parts[parts.length - 1];
+            // pinValue คือ 'data' ที่ถูก parse แล้ว
+            
+            const pinControlPage = document.getElementById('page-pins');
+            if (pinControlPage && !pinControlPage.classList.contains('hidden-page')) {
+                updatePinControlStatus(pinId.toUpperCase(), data);
+            }
+            const pinStatusPage = document.getElementById('page-pin-status');
+            if (pinStatusPage && !pinStatusPage.classList.contains('hidden-page')) {
+                updatePinStatusUI(pinId.toUpperCase(), data);
             }
 
-            // NEW: Event Listener for the new Clear button on the Shortcut page
-            const clearLogBtnShortcut = document.getElementById('clearLogBtn-shortcut');
-            if (clearLogBtnShortcut) {
-                clearLogBtnShortcut.addEventListener('click', () => {
-                    const logContainer = document.getElementById('message-log-container-shortcut');
-                    if (logContainer) {
-                        logContainer.innerHTML = '';
-                        addLogMessage('Log cleared.');
+        } else if (topic.includes('status')) {
+            if (data.pins) {
+                const pinControlPage = document.getElementById('page-pins');
+                if (pinControlPage && !pinControlPage.classList.contains('hidden-page')) {
+                    for (const pinId in data.pins) {
+                        updatePinControlStatus(pinId.toUpperCase(), data.pins[pinId]);
                     }
-                });
+                }
+                const pinStatusPage = document.getElementById('page-pin-status');
+                if (pinStatusPage && !pinStatusPage.classList.contains('hidden-page')) {
+                    for (const pinId in data.pins) {
+                        updatePinStatusUI(pinId.toUpperCase(), data.pins[pinId]);
+                    }
+                }
+            } else if (data.data && !logged) {
+                // Handle messages with a 'data' field ที่ยังไม่ได้ Log ในส่วน 1.1 
+                logMessage(`[From Micro:bit] ${data.data}`);
+            } else if (data.deviceId && !logged) {
+                // Handle status messages that only contain deviceId
+                logMessage(`[Status] Device ID: ${data.deviceId}`);
             }
-        });
-        
-                    // --- MQTT handling logic (updated to call the correct UI functions) ---
-                    function onMessageArrived(message) {
-                        const topic = message.destinationName;
-                        const payload = message.payloadString;
+        } else if (topic.includes('status/message')) {
+            showModal('Micro:bit Message', payload);
+        } else if (!logged) {
+            // 1.3 สำหรับ Topic อื่นๆ ที่ไม่ได้ถูก Log
+            logMessage(`[MQTT] Unrecognized topic: ${topic} - Payload: ${payload}`);
+        }
 
-                        console.log(`Received message on topic "${topic}": ${payload}`);
-                        
-                        try {
-                            if (topic.includes('status/pin')) {
-                                const parts = topic.split('/');
-                                const pinId = parts[parts.length - 1];
-                                const pinValue = JSON.parse(payload);
-                                const pinControlPage = document.getElementById('page-pins');
-                                if (pinControlPage && !pinControlPage.classList.contains('hidden-page')) {
-                                    updatePinControlStatus(pinId.toUpperCase(), pinValue);
-                                }
-                                const pinStatusPage = document.getElementById('page-pin-status');
-                                if (pinStatusPage && !pinStatusPage.classList.contains('hidden-page')) {
-                                    updatePinStatusUI(pinId.toUpperCase(), pinValue);
-                                }
-                            } else if (topic.includes('status')) {
-                                const data = JSON.parse(payload);
-                                if (data.pins) {
-                                    const pinControlPage = document.getElementById('page-pins');
-                                    if (pinControlPage && !pinControlPage.classList.contains('hidden-page')) {
-                                        for (const pinId in data.pins) {
-                                            const pinValue = data.pins[pinId];
-                                            updatePinControlStatus(pinId.toUpperCase(), pinValue);
-                                        }
-                                    }
-                                    const pinStatusPage = document.getElementById('page-pin-status');
-                                    if (pinStatusPage && !pinStatusPage.classList.contains('hidden-page')) {
-                                        for (const pinId in data.pins) {
-                                            const pinValue = data.pins[pinId];
-                                            updatePinStatusUI(pinId.toUpperCase(), pinValue);
-                                        }
-                                    }
-                                } else if (data.data) {
-                                    // NEW: Handle messages with a 'data' field and log them
-                                    addLogMessage(`[From Micro:bit] ${data.data}`);
-                                } else if (data.deviceId) {
-                                    // Handle status messages that only contain deviceId
-                                }
-                            } else if (topic.includes('status/message')) {
-                                showModal('Micro:bit Message', payload);
-                            } else {
-                                console.warn(`Unrecognized topic: ${topic}`);
-                            }
-                        } catch (e) {
-                            console.error("Error parsing message payload:", e);
-                            showModal('MQTT Error', 'Failed to parse incoming data.');
-                        }
-                    }
+    } catch (e) {
+        // 2. จัดการข้อผิดพลาดที่เกิดขึ้นขณะ Parse JSON (JSON.parse ล้มเหลว)
+        console.error("Error parsing message payload:", e);
+        showModal('MQTT Error', 'Failed to parse incoming data.');
+        logMessage(`[Error] Failed to parse message on topic ${topic}: ${e.message}`);
+    }
+}
 
 
-                    // Add this event listener to the existing window.onload or DOMContentLoaded block
-                    document.addEventListener('DOMContentLoaded', () => {
-                        // Other event listeners...
-                        const clearLogBtn = document.getElementById('clearLogBtn');
-                        if (clearLogBtn) {
-                            clearLogBtn.addEventListener('click', () => {
-                                const logContainer = document.getElementById('message-log-container');
-                                if (logContainer) {
-                                    logContainer.innerHTML = ''; // Clear the content
-                                    addLogMessage('Log cleared.');
-                                }
-                            });
-                        }
-                    });
+                   
 
             window.publishCommand = function(topicSuffix, payload, addClass) {
                 if (!isConnected) {
@@ -2046,8 +2289,206 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
 });
-        
-        
+ 
+
+// ----------------------------------------------------------------------
+// 1. แหล่งข้อมูลและฟังก์ชันหลักสำหรับการ Log
+// ----------------------------------------------------------------------
+
+let messageHistory = []; 
+
+/**
+ * ฟังก์ชันหลักในการบันทึกและแสดงผล Message Log ในทุกหน้า
+ * @param {string} message - ข้อความที่ต้องการบันทึก (โดยไม่ต้องมี Timestamp หรือ \n)
+ */
+function logMessage(message) {
+    // 1. จัดรูปแบบและบันทึกข้อความลงในแหล่งข้อมูลกลาง
+    const timestamp = new Date().toLocaleTimeString();
+    const formattedMessage = `[${timestamp}] ${message}\n`;
+    messageHistory.push(formattedMessage);
+    
+    // 2. สร้าง Content จากประวัติทั้งหมด
+    const logContent = messageHistory.join(''); 
+    
+    // 3. อัปเดตคอนเทนเนอร์ทั้งหมด (Message Log จะแสดงเป็น innerText)
+    const containers = [
+        document.getElementById('message-log-container-pin'),
+        document.getElementById('message-log-container-message'),
+        document.getElementById('message-log-container-shortcut') // รองรับหน้า shortcut ด้วย
+    ];
+
+    containers.forEach(container => {
+        if (container) {
+            container.innerText = logContent;
+            // เลื่อนไปด้านล่างสุดเสมอ
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+}
+
+
+// ----------------------------------------------------------------------
+// 2. ฟังก์ชันหลักสำหรับ Clear: ล้างแหล่งข้อมูลและอัปเดตการแสดงผลทั้งหมด
+// ----------------------------------------------------------------------
+
+// ----------------------------------------------------------------------
+// 2. ฟังก์ชันหลักสำหรับ Clear
+// ----------------------------------------------------------------------
+
+/**
+ * ฟังก์ชันสำหรับล้าง Message Log ในทุกหน้า
+ */
+function clearLog() {
+    messageHistory = []; // ล้างแหล่งข้อมูลหลัก
+
+    // ล้างการแสดงผลในทุกคอนเทนเนอร์โดยตรง
+    const containers = [
+        document.getElementById('message-log-container-pin'),
+        document.getElementById('message-log-container-message'),
+        document.getElementById('message-log-container-shortcut')
+    ];
+    
+    containers.forEach(container => {
+        if (container) {
+            container.innerText = '';
+        }
+    });
+
+    // เพิ่ม Log ใหม่เพื่อบอกว่าล้างแล้ว
+    logMessage('Log cleared.');
+}
+
+// 4. ผูก Event Listeners สำหรับปุ่ม Clear ทั้งหมด
+// ----------------------------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', () => {
+    // ... (existing code for other event listeners) ...
+
+    const clearLogBtnShortcut = document.getElementById('clearLogBtn-shortcut');
+    const clearPinBtn = document.getElementById('clearLogBtn-pin');
+    const clearMessageBtn = document.getElementById('clearLogBtn-message');
+    
+    // ผูก Event Listener สำหรับปุ่ม Clear ทั้ง 3 ปุ่ม (ทั้งหมดเรียกใช้ฟังก์ชัน clearLog เดียวกัน)
+
+    if (clearLogBtnShortcut) {
+        clearLogBtnShortcut.addEventListener('click', clearLog);
+    }
+    
+    if (clearPinBtn) {
+        clearPinBtn.addEventListener('click', clearLog);
+    }
+
+    if (clearMessageBtn) {
+        clearMessageBtn.addEventListener('click', clearLog);
+    }
+});  
+
+// NEW: Sensor Dashboard State and Functions
+// ----------------------------------------------------------------------
+
+/**
+ * 1. ตัวแปรเก็บสถานะ Sensor ล่าสุด
+ * ใช้ชื่อ key ให้ตรงกับส่วนหน้าจอและข้อมูลที่ส่งมา (e.g., distance, acceleration_x)
+ */
+const sensorState = {
+    distance: 'N/A',
+    temperature: 'N/A',
+    light_level: 'N/A',
+    sound_level: 'N/A',
+    magnetic_strength: 'N/A',
+    heading: 'N/A',
+    acceleration_x: 'N/A',
+    acceleration_y: 'N/A',
+    acceleration_z: 'N/A',
+    rotation_pitch: 'N/A',
+    rotation_roll: 'N/A',
+    
+
+   
+    analog_pin0: 'N/A',
+    analog_pin1: 'N/A',
+    analog_pin2: 'N/A',
+
+    
+    digital_pin0: 'N/A',
+    digital_pin1: 'N/A',
+    digital_pin2: 'N/A',
+    digital_pin8: 'N/A',
+    digital_pin12: 'N/A',
+    digital_pin13: 'N/A',
+    digital_pin14: 'N/A',
+    digital_pin15: 'N/A', 
+    digital_pin16: 'N/A',
+  
+};
+
+/**
+ * 2. ฟังก์ชันสำหรับอัพเดทค่าใน Sensor Dashboard
+ */
+/**
+ * 2. ฟังก์ชันสำหรับอัพเดทค่าใน Sensor Dashboard
+ */
+function updateSensorDashboard() {
+    // -------------------------------------------------------------
+    // NEW: สร้าง Array ของ Digital Pins เพื่อตรวจสอบการเปลี่ยนสี
+    // -------------------------------------------------------------
+    const digitalPins = [
+        'digital_pin0',
+        'digital_pin1', 
+        'digital_pin2', 
+        'digital_pin8',
+        'digital_pin12', 
+        'digital_pin13', 
+        'digital_pin14', 
+        'digital_pin15', 
+        'digital_pin16'
+    ];
+    
+    for (const sensor in sensorState) {
+        const element = document.getElementById(`sensor-${sensor}`);
+        if (element) {
+            let value = sensorState[sensor];
+            
+            // Format number to 0 decimal places if it is a number and is not N/A
+            if (typeof value === 'number' && !sensor.startsWith('analog')) {
+                // ยกเว้น Analog Pin ไม่ต้องปัดเศษ (ให้แสดงเต็มที่ 0-1023)
+                value = value.toFixed(0); 
+            } else if (typeof value === 'number' && sensor.startsWith('analog')) {
+                 // Analog Pin ปัดเป็นจำนวนเต็ม 
+                value = Math.round(value); 
+            }
+
+            element.textContent = value;
+            
+            // -------------------------------------------------------------
+            // แก้ไข: ตรวจสอบและเปลี่ยนสีพื้นหลังของ Card สำหรับ Digital Pins ทุกตัว
+            // -------------------------------------------------------------
+            if (digitalPins.includes(sensor)) { // ตรวจสอบว่า Pin นี้เป็น Digital หรือไม่
+                const card = element.closest('.sensor-card');
+                if (card) {
+                    // กำหนดสีพื้นฐานและสีสถานะ
+                    const baseColorClass = 'bg-pin-low'; 
+                    const highColorClass = 'bg-pin-high'; 
+                    
+                    card.classList.remove(baseColorClass, highColorClass);
+                    
+                    if (value === '1' || value === 1) { // ตรวจสอบค่าเป็น 1
+                         card.classList.add(highColorClass);
+                    } else if (value === '0' || value === 0) { // ตรวจสอบค่าเป็น 0
+                         card.classList.add(baseColorClass);
+                    } else {
+                         // หากไม่ใช่ 0 หรือ 1 (เช่น N/A หรือค่าอื่น ๆ) ให้ใช้สีพื้นฐานของ card เอง
+                         card.classList.add('bg-new-pastel-card'); 
+                    }
+                }
+            }
+            // -------------------------------------------------------------
+        }
+    }
+}
+
+
+
         </script>
 
 
